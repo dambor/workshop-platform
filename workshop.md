@@ -338,3 +338,36 @@ You will connect to your vector database by configuring the Astra DB component, 
 Select your database from the Database dropdown list. When the database field is filled, a second field will appear for the collection. Select the collection you created earlier.
 
 ![](./pictures/004-retrieval.png)
+
+7. Connect the Embedding Model connector of the IBM watsonx.ai Embeddings component to the Embedding Model section of the Astra DB component. Also ensure there is a connection between Chat Message field to the Search Query field.
+
+![](./pictures/005-retrieval.png)
+
+8. Ensure Astra DB connected to Parser: Click the dropdown on the bottom of the Astra DB tile, select DataFrame, then connect the two tiles.
+
+![](./pictures/006-retrieval.png)
+
+9. You have configured the embedding component for the Retriever Flow. Drag and drop the IBM watsonx.ai component from the IBM dropdown list in the Bundles section onto the canvas.
+
+![](./pictures/007-retrieval.png)
+
+10. In the IBM watsonx.ai component, enter the fields watsonx API Endpoint, Project ID, and API key with your saved IBM watsonx.ai credentials.
+
+For the Model Name, select ibm/granite-3-8b-instruct from the dropdown list.
+
+Connect the Prompt connector of the Prompt Template component to the Input section of the IBM watsonx.ai component. 
+
+Connect the Model Response connector of the IBM watsonx.ai component to the Inputs section of the Chat Output component.
+
+![](./pictures/008-retrieval.png)
+
+11. Your Retrieval Flow has been configured. Click Playground.
+
+![](./pictures/009-retrieval.png)
+
+12. You can test your flow by asking a question in the assistant interface. Copy and paste the message below, and note the output:
+
+``` What is the document about? ```
+
+![](./pictures/010-retrieval.png)
+

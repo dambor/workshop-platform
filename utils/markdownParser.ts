@@ -27,7 +27,8 @@ export function parseWorkshopMarkdown(markdown: string): WorkshopStep[] {
         title: currentStep.title,
         section: currentStep.section || currentSection,
         duration: currentStep.duration || '5 min',
-        content: [...currentContent]
+        content: [...currentContent],
+        level: currentStep.level
       });
     }
     currentStep = null;
