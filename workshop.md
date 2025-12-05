@@ -130,6 +130,12 @@ Astra DB provides a managed Langflow environment.
 
 ## Lab 1 - Building the Flow
 
+DataStax Langflow is a sophisticated visual development environment that streamlines the creation of AI workflows, particularly in contexts involving foundation models and vector databases. Within enterprise environments, DataStax Langflow empowers teams to rapidly prototype and iterate on AI-driven solutions without the need for manual coding, thereby fostering effective collaboration between technical and business stakeholders.
+
+In this workshop, DataStax Langflow functions as the orchestration layer, enabling users to visually integrate components such as models, prompts, and data sources. This methodology closely aligns with the architecture of contemporary AI applications deployed in production, where modularity, agility, and scalability are paramount to success.
+
+### Steps
+
 1. Click on Create first flow.
 
 2. Click the Blank Flow button. You will build your first flow in this blank canvas.
@@ -178,6 +184,8 @@ Prompt engineering refers to the deliberate and systematic formulation of instru
 
 As a foundational technique, prompt engineering plays a pivotal role in aligning model responses with specific use cases and is instrumental in the development of robust, effective, and reliable AI applications.
 
+### Steps
+
 1. Delete the link between the Chat Input component and the IBM watsonx.ai component.
 
 ![](./pictures/001-prompt-engineering.png) 
@@ -217,8 +225,6 @@ This technique is essential for tailoring model behavior to specific use cases, 
 ![](./pictures/006-prompt-engineering.png) 
 
 ## Lab 3 - RAG
-
-### Introducing RAG & Vector Databases
 
 Having constructed a foundational assistant and implemented a prompt to tailor response delivery, the next step involves enriching its capabilities through a retrieval-augmented generation (RAG)-enabled workflow. RAG is a sophisticated technique that enhances the performance of foundation models by grounding their outputs in external, domain-specific data sources. Rather than relying exclusively on pre-trained knowledge, RAG retrieves relevant information from a vector database—such as DataStax Astra DB—to inform the model’s responses in real time. This approach is particularly valuable when addressing queries based on proprietary or dynamic content.
 
@@ -371,3 +377,144 @@ Connect the Model Response connector of the IBM watsonx.ai component to the Inpu
 
 ![](./pictures/010-retrieval.png)
 
+You may proceed to evaluate the flow by submitting additional messages related to the document within the chat interface. Upon completion of the testing process, you may close the Playground window.
+
+## Lab 4: Create Agentic Flow
+
+Having explored the construction of an assistant and the implementation of retrieval-augmented generation (RAG) using vectorized data, you are now prepared to advance to the next phase: developing an AI agent. Agentic AI refers to systems capable of reasoning, decision-making, and autonomous action based on user input and available tools. Unlike conventional assistants that respond to prompts in isolation, agents can dynamically interact with external systems, sequence tasks, and adapt their behavior to achieve defined objectives.
+
+In this section, you will utilize the Simple Agent template within DataStax Langflow to construct an AI agent. The agent will be configured to retrieve information from your DataStax Astra DB vector database and autonomously navigate public URLs. This hands-on activity illustrates the enterprise value of agentic AI, enabling intelligent automation, context-aware decision-making, and scalable task execution across complex workflows.
+
+### Steps
+
+1. Click Starter Project to return to your Projects.
+
+![](./pictures/001-agentic.png)
+
+2. Click New Flow.
+
+![](./pictures/002-agentic.png)
+
+3. Click the Simple Agent template.
+
+![](./pictures/003-agentic.png)
+
+The template is initialized with three primary components: the Agent, URL, and Calculator components. These differ from the standard components utilized in the RAG template. Upon selecting the URL component, you will observe that Tool Mode is activated. The Calculator component similarly functions as a tool.
+
+In this context, a tool refers to a specialized capability or function that the agent can invoke to perform specific tasks—such as conducting web searches, executing code, or retrieving information from a database. When an agent engages a tool, it is effectively delegating a task or query that exceeds its native capabilities.
+
+4. You will need to configure the Agent component to use IBM watsonx.ai foundation models. Under the Language Model field, select Custom from the drop-down list. You will link an IBM watsonx.ai component to this field.
+
+![](./pictures/004-agentic.png)
+
+```NOTE: Model behavior can vary significantly. If results are not satisfactory, try switching between OpenAI models and IBM Granite models to compare quality and latency.```
+
+5. Drag and drop the IBM watsonx.ai model component onto the canvas.
+
+Configure the details for the connection to your IBM watsonx.ai component using same credentials as previous steps.
+
+Select openai/gpt-oss-120b from the Model Name dropdown list.
+
+![](./pictures/005-agentic.png)
+
+
+6. Drag and drop the IBM watsonx.ai model component onto the canvas.
+
+Configure the details for the connection to your IBM watsonx.ai component using same credentials as previous steps.
+
+Select openai/gpt-oss-120b from the Model Name dropdown list.
+
+![](./pictures/006-agentic.png)
+
+7. In the IBM watsonx.ai component, click from the Model Response dropdown list and select Language Model. Connect the Language Model connector of the IBM watsonx.ai model component to the Language Model section of the Agent component.
+
+![](./pictures/007-agentic.png)
+
+8. i.	Copy and paste the text below into the Components search bar. You are looking for the Vector Store Astra DB component:
+
+```astra```
+
+9. Drag and drop the Astra DB component from the Vector Stores tab onto the canvas.
+
+Enable Tool Mode by toggling the switch in the Astra DB component. This will allow it to connect to the Agent component. 
+
+Connect to your vector database by configuring the Astra DB component. Enter your Astra DB application token.
+
+![](./pictures/008-agentic.png)
+
+10. Select your Database and Collection from the respective dropdown lists.
+
+Connect the Toolset connector of the Astra DB component to the Tools section of the Agent component.
+
+![](./pictures/009-agentic.png)
+
+11. Your Astra DB component has been connected and configured. Drag and drop the IBM watsonx.ai Embeddings component onto the canvas.
+
+Configure the details for the connection to your IBM watsonx.ai Embeddings component using your saved credentials.
+
+Select ibm/slate-125m-english-rtrvr-v2 from the Model Name dropdown list.
+
+Connect the Embedding Model connector of the IBM watsonx.ai Embeddings component to the Embedding Model section of the Astra DB component.
+
+![](./pictures/010-agentic.png)
+
+12. Drag and drop the Prompt Template component onto the canvas. This is what you will use to fine tune your model responses.
+
+Click the Template field in the Prompt Template component.
+
+![](./pictures/011-agentic.png)
+
+13. Copy and paste the message below into the text field. Click Check and save:
+
+```You are an agent specializing in job experience information pertaining to [insert your name]. For job experience stored in Astra DB do not use URL tool even if job experience contains URLs. Only use URLs to check job descriptions.```
+
+![](./pictures/012-agentic.png)
+
+14. Connect the Prompt connector of the Prompt Template component to the Agent Instructions section of the Agent component.
+
+You have added the necessary components to the flow. Click Playground to test the flow outputs.
+
+![](./pictures/013-agentic.png)
+
+15. In the Playground, test your agent with the following prompt, noting the output generated by the model:
+
+```Summarize my job experience```
+
+![](./pictures/014-agentic.png)
+
+16. In the Playground, test the chat inputs below, noting the output generated by the model:
+
+```Can you tell me if my job experience is a good fit for this role: <insert link to job posting here>```
+
+```Note: For the job posting link, select any job posting from the IBM Careers website: https://ibmglobal.avature.nhttpsdet/en_US/careers/OpenJobs/
+
+Note: If the output appears inaccurate or unrelated (hallucination), try switching models. For example, test with ibm/granite-3-8b-instruct, other Granite variants, or an available OpenAI model. Compare responses and choose the model that best fits your use case.
+```
+
+You have successfully developed an agentic AI flow, which you employed to evaluate your alignment with a specific role at IBM by comparing the position’s requirements with your own qualifications. You are encouraged to further test the flow by submitting additional queries within the chat interface. Once the evaluation is complete, you may proceed to close the Playground window.
+
+## Summary
+
+Congratulations on completing all the exercises! In this workshop you have:
+
+•	Created an account in DataStax.
+
+•	Retrieved and configured deployment credentials for IBM Granite foundation models and IBM Slate embedding models with IBM watsonx.ai.
+
+•	Explored the DataStax Langflow interface and built your first flow.
+
+•	Created a basic assistant using IBM watsonx.ai and DataStax Langflow.
+
+•	Enhanced model responses through prompt engineering.
+
+•	Implemented a retrieval-augmented generation (RAG) flow using DataStax Astra DB and DataStax Langflow. 
+
+•	Ingested and vectorized a PDF document into a DataStax Astra DB vector database.
+
+•	Built a retriever flow to answer questions using contextual data.
+
+•	Developed an agentic AI workflow capable of retrieving information, using tools, and analyzing external job postings.
+
+•	Experimented with different model providers (e.g., IBM Granite and OpenAI) to compare agent behavior and output quality.
+
+•	Tested all flows using the DataStax Langflow playground interface.
