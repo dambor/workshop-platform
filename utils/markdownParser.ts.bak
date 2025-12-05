@@ -52,14 +52,6 @@ export function parseWorkshopMarkdown(markdown: string): WorkshopStep[] {
         section: currentSection
       };
     }
-    // Sub-Step Header: ### Step Title
-    else if (line.startsWith('### ')) {
-      finalizeStep();
-      currentStep = {
-        title: line.substring(4).trim(),
-        section: currentSection
-      };
-    }
     // Content processing
     else if (currentStep) {
       // Metadata (only at start of step)
