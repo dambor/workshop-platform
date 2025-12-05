@@ -3,7 +3,7 @@ import { WorkshopStep, StepContent } from '../types';
 export function parseWorkshopMarkdown(markdown: string): WorkshopStep[] {
   const steps: WorkshopStep[] = [];
   const lines = markdown.split('\n');
-  
+
   let currentSection = 'General';
   let currentStep: Partial<WorkshopStep> | null = null;
   let currentContent: StepContent[] = [];
@@ -43,7 +43,7 @@ export function parseWorkshopMarkdown(markdown: string): WorkshopStep[] {
     if (line.startsWith('# ')) {
       finalizeStep();
       currentSection = line.substring(2).trim();
-    } 
+    }
     // Step Header: ## Step Title
     else if (line.startsWith('## ')) {
       finalizeStep();
@@ -51,7 +51,7 @@ export function parseWorkshopMarkdown(markdown: string): WorkshopStep[] {
         title: line.substring(3).trim(),
         section: currentSection
       };
-    } 
+    }
     // Content processing
     else if (currentStep) {
       // Metadata (only at start of step)
@@ -70,15 +70,23 @@ export function parseWorkshopMarkdown(markdown: string): WorkshopStep[] {
       // Code Blocks
       if (trimmed.startsWith('```')) {
         flushBuffer();
-        const language = trimmed.replace(/```/g, '').trim() || 'text';
-        let code = '';
-        i++; // skip start delimiter
-        while (i < lines.length && !lines[i].trim().startsWith('```')) {
-          code += lines[i] + '\n';
-          i++;
+
+        // Check for single-line code block: ```content```
+        if (trimmed.length > 3 && trimmed.endsWith('```')) {
+          const content = trimmed.slice(3, -3).trim();
+          currentContent.push({ type: 'code', language: 'text', value: content });
+        } else {
+          // Multi-line code block
+          const language = trimmed.replace(/```/g, '').trim() || 'text';
+          let code = '';
+          i++; // skip start delimiter
+          while (i < lines.length && !lines[i].trim().startsWith('```')) {
+            code += lines[i] + '\n';
+            i++;
+          }
+          currentContent.push({ type: 'code', language, value: code.trim() });
         }
-        currentContent.push({ type: 'code', language, value: code.trim() });
-      } 
+      }
       // Images: ![alt](url)
       else if (trimmed.match(/^!\[(.*?)\]\((.*?)\)$/)) {
         flushBuffer();
@@ -86,24 +94,24 @@ export function parseWorkshopMarkdown(markdown: string): WorkshopStep[] {
         if (match) {
           currentContent.push({ type: 'image', alt: match[1], value: match[2] });
         }
-      } 
+      }
       // Tips
       else if (trimmed.startsWith('> TIP:')) {
         flushBuffer();
         currentContent.push({ type: 'tip', value: trimmed.replace('> TIP:', '').trim() });
-      } 
+      }
       // Warnings
       else if (trimmed.startsWith('> WARNING:')) {
         flushBuffer();
         currentContent.push({ type: 'warning', value: trimmed.replace('> WARNING:', '').trim() });
-      } 
+      }
       // Normal Text
       else {
         bufferText.push(line);
       }
     }
   }
-  
+
   // Finalize last step
   finalizeStep();
 

@@ -159,3 +159,15 @@ Connect the Chat Input component to the Input connector of the IBM watsonx.ai co
 
 ![](./pictures/014-astra-langflow.png) 
 
+## Testing the Flow
+
+1. Click on the Playground tab in the top right corner.
+2. Copy and paste the message below into the chat. For the output, you should expect a story, streaming a few words at a time:
+
+```Tell me a short story in no more than four sentences.```
+
+3. Observe the response from the foundation model.
+
+![](./pictures/015-astra-langflow.png) 
+
+
