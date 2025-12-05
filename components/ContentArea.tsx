@@ -25,12 +25,39 @@ const RenderItem: React.FC<{ item: StepContent }> = ({ item }) => {
       return <div className="text-gray-300 leading-relaxed mb-4 text-lg" dangerouslySetInnerHTML={{ __html: htmlContent }} />;
 
     case 'code':
+      // eslint-disable-next-line no-case-declarations
+      const [copied, setCopied] = React.useState(false);
+
+      // eslint-disable-next-line no-case-declarations
+      const handleCopy = () => {
+        navigator.clipboard.writeText(item.value);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      };
+
       return (
         <div className="my-6 relative group">
-          <div className="absolute top-0 right-0 px-3 py-1 text-xs font-mono text-gray-500 bg-black/40 rounded-bl">
-            {item.language}
+          <div className="absolute top-0 right-0 flex items-center">
+            <div className="px-3 py-1 text-xs font-mono text-gray-500 bg-black/40 rounded-bl border-b border-l border-white/10">
+              {item.language}
+            </div>
+            <button
+              onClick={handleCopy}
+              className="px-3 py-1 text-xs font-mono text-gray-400 bg-white/5 hover:bg-white/10 border-b border-l border-white/10 transition-colors flex items-center gap-1 rounded-bl-lg"
+              title="Copy code"
+            >
+              {copied ? (
+                <span className="text-green-400 font-bold">Copied!</span>
+              ) : (
+                <span className="flex items-center gap-1">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                  Copy
+                </span>
+              )}
+            </button>
           </div>
-          <pre className="bg-[#0f0f11] border border-white/10 p-4 rounded-lg overflow-x-auto text-sm font-mono text-gray-200 shadow-inner">
+
+          <pre className="bg-[#0f0f11] border border-white/10 p-4 rounded-lg overflow-x-auto text-sm font-mono text-gray-200 shadow-inner pt-8">
             <code>{item.value}</code>
           </pre>
         </div>
