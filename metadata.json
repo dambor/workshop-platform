@@ -1,0 +1,5 @@
+{
+  "name": "Watsonx.data Workshop",
+  "description": "A modern, interactive workshop platform for learning how to build RAG pipelines with Watsonx.data, featuring an AI teaching assistant.",
+  "requestFramePermissions": []
+}
