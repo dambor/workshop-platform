@@ -323,4 +323,18 @@ In the next step, you will configure the Retriever Flow to enable question answe
 
 ![](./pictures/001-retrieval.png)
 
+4. Drag and drop the IBM watsonx.ai Embeddings component from the IBM dropdown list in the Bundles section.
 
+![](./pictures/002-retrieval.png)
+
+5. In the IBM watsonx.ai Embeddings component, enter the fields watsonx API Endpoint, Project ID, and API key with your saved IBM watsonx.ai credentials. For the Model Name, select ibm/slate-125m-english-rtrvr-v2 from the dropdown list.
+
+![](./pictures/003-retrieval.png)
+
+6. Ensure your Astra DB tile in retriever flow has a section for Embedding Model. If it does not, use the search tool on the top left to replace the Astra DB tile. 
+
+You will connect to your vector database by configuring the Astra DB component, enter the Astra DB application token that you saved when the DataStax Astra DB was created in your lab preparation. 
+
+Select your database from the Database dropdown list. When the database field is filled, a second field will appear for the collection. Select the collection you created earlier.
+
+![](./pictures/004-retrieval.png)

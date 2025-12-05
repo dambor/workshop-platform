@@ -17,6 +17,7 @@ export interface WorkshopStep {
   section: string; // Grouping identifier
   duration: string; // e.g. "10 min"
   content: StepContent[];
+  level?: number;
 }
 
 export interface ChatMessage {

@@ -49,7 +49,8 @@ export function parseWorkshopMarkdown(markdown: string): WorkshopStep[] {
       finalizeStep();
       currentStep = {
         title: line.substring(3).trim(),
-        section: currentSection
+        section: currentSection,
+        level: 0
       };
     }
     // Sub-Step Header: ### Step Title
@@ -57,7 +58,8 @@ export function parseWorkshopMarkdown(markdown: string): WorkshopStep[] {
       finalizeStep();
       currentStep = {
         title: line.substring(4).trim(),
-        section: currentSection
+        section: currentSection,
+        level: 1
       };
     }
     // Content processing
