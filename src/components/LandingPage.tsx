@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Book, ChevronRight, GraduationCap, Clock, MonitorPlay, Search } from 'lucide-react';
+import { ArrowUpRight, Clock, GraduationCap, Search, Sparkles } from 'lucide-react';
+import { GeminiLogo } from './GeminiLogo';
+import { ThemeToggle } from './ThemeToggle';
 
 interface WorkshopCard {
     id: string;
@@ -47,7 +49,6 @@ const LandingPage: React.FC = () => {
                 const basePath = import.meta.env.BASE_URL || '/';
                 let mdFilenames: string[] = [];
 
-                // Try local index first (served by Vite plugin in dev, static file in prod)
                 try {
                     const localIndexRes = await fetch(`${basePath}workshops/index.json`);
                     if (localIndexRes.ok) {
@@ -55,7 +56,6 @@ const LandingPage: React.FC = () => {
                     }
                 } catch { /* ignore */ }
 
-                // Fall back to GitHub API
                 if (mdFilenames.length === 0) {
                     const repoOwner = 'dambor';
                     const repoName = 'workshop-platform';
@@ -68,13 +68,10 @@ const LandingPage: React.FC = () => {
                         .map((f: any) => f.name);
                 }
 
-                // Fetch content for each workshop
                 const workshopPromises = mdFilenames.map(async (filename: string) => {
                     try {
-                        // Try local path first
                         let res = await fetch(`${basePath}workshops/${filename}`);
                         if (!res.ok) {
-                            // Fall back to GitHub raw
                             res = await fetch(`https://raw.githubusercontent.com/dambor/workshop-platform/main/public/workshops/${filename}`);
                         }
                         if (!res.ok) return null;
@@ -98,83 +95,112 @@ const LandingPage: React.FC = () => {
 
 
     return (
-        <div className="min-h-screen bg-gray-950 text-gray-100 font-sans selection:bg-blue-500/30">
-            {/* Hero Section */}
-            <div className="relative overflow-hidden bg-gray-900 border-b border-white/5">
-                <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:60px_60px]" />
-                <div className="absolute -top-24 -left-20 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl pointer-events-none" />
-                <div className="absolute -bottom-24 -right-20 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="min-h-screen bg-surface text-fg font-sans selection:bg-accent-soft">
+            {/* Hero */}
+            <section className="relative overflow-hidden">
+                <div className="aurora-bg" />
 
-                <div className="relative max-w-7xl mx-auto px-6 pt-8 lg:px-8">
-                    <div className="flex items-center gap-4 cursor-pointer group w-fit" onClick={() => navigate('/')}>
-                        <img
-                            src="https://upload.wikimedia.org/wikipedia/commons/5/51/IBM_logo.svg"
-                            alt="IBM"
-                            className="h-8 w-auto brightness-0 invert opacity-90 group-hover:opacity-100 transition-opacity"
-                        />
-                        <div className="h-8 w-px bg-white/10"></div>
-                        <span className="text-gray-400 font-medium tracking-tight text-sm">Workshop Platform</span>
+                {/* Top bar */}
+                <div className="relative max-w-7xl mx-auto px-6 pt-8 lg:px-10 flex items-center justify-between">
+                    <button
+                        onClick={() => navigate('/')}
+                        className="flex items-center gap-3 group"
+                    >
+                        <GeminiLogo size={28} animated />
+                        <span className="font-display font-semibold text-base tracking-tight gemini-gradient-text">
+                            Gemini Workshops
+                        </span>
+                    </button>
+                    <div className="flex items-center gap-2">
+                        <a
+                            href="https://design.google/library/gemini-ai-visual-design"
+                            target="_blank"
+                            rel="noreferrer"
+                            className="hidden sm:inline-flex items-center gap-1.5 text-xs font-medium text-fg-muted hover:text-fg transition-colors px-3 py-2 rounded-full hover:bg-surface-1"
+                        >
+                            Design system
+                            <ArrowUpRight className="w-3.5 h-3.5" />
+                        </a>
+                        <ThemeToggle />
                     </div>
                 </div>
 
-                <div className="relative max-w-7xl mx-auto px-6 py-24 sm:py-32 lg:px-8 flex flex-col items-center text-center">
-                    <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-white mb-12">
-                        Hands-on Workshops
+                {/* Hero copy */}
+                <div className="relative max-w-7xl mx-auto px-6 py-24 sm:py-32 lg:px-10 flex flex-col items-center text-center">
+                    <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-border-subtle bg-surface-1/80 backdrop-blur text-xs font-medium text-fg-muted mb-8 animate-fade-in">
+                        <Sparkles className="w-3.5 h-3.5 text-[var(--color-gemini-purple)]" />
+                        Hands-on learning, reimagined with Gemini
+                    </div>
+
+                    <h1 className="font-display text-5xl md:text-7xl font-semibold tracking-tight mb-6 max-w-4xl leading-[1.05]">
+                        <span className="gemini-gradient-text">Build with AI,</span>
+                        <br />
+                        <span className="text-fg">step by step.</span>
                     </h1>
 
-                    <div className="relative w-full max-w-2xl mb-12 group">
+                    <p className="text-lg md:text-xl text-fg-muted max-w-2xl mb-12 leading-relaxed">
+                        Guided, interactive workshops to ship real projects with modern AI tooling — from data pipelines to agentic flows.
+                    </p>
+
+                    {/* Search */}
+                    <div className="relative w-full max-w-2xl group">
                         <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none">
-                            <Search className="h-5 w-5 text-gray-500 group-focus-within:text-blue-400 transition-colors" />
+                            <Search className="h-5 w-5 text-fg-subtle group-focus-within:text-[var(--color-gemini-purple)] transition-colors" />
                         </div>
                         <input
                             type="text"
-                            placeholder="Search for a workshop (e.g., AI, Cloud, React...)"
+                            placeholder="Search workshops by topic, tool, or skill…"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full bg-gray-900/50 backdrop-blur-xl border border-white/10 text-white pl-14 pr-6 py-5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all text-lg placeholder:text-gray-500 shadow-2xl"
+                            className="w-full bg-surface-1 border border-border-default text-fg placeholder:text-fg-subtle pl-14 pr-6 py-5 rounded-full focus:outline-none focus:border-transparent focus:ring-2 focus:ring-[var(--color-gemini-indigo)]/60 transition-all text-base shadow-[var(--shadow-card)]"
                         />
-                        <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-500/10 to-purple-500/10 opacity-0 group-focus-within:opacity-100 pointer-events-none transition-opacity -z-10" />
+                        <div className="pointer-events-none absolute inset-0 rounded-full opacity-0 group-focus-within:opacity-100 transition-opacity -z-10 blur-xl gemini-gradient" />
                     </div>
                 </div>
-            </div>
+            </section>
 
-            {/* Workshops Grid */}
-            <div className="max-w-7xl mx-auto px-6 py-20 lg:px-8">
-                <div className="flex items-center justify-between mb-12">
-                    <h2 className="text-2xl font-semibold text-white flex items-center gap-3">
-                        <MonitorPlay className="w-6 h-6 text-blue-400" />
-                        Available Workshops
-                    </h2>
-                    <div className="text-sm text-gray-500">
-                        {filteredWorkshops.length} {filteredWorkshops.length === 1 ? 'Workshop' : 'Workshops'} Found
+            {/* Workshops grid */}
+            <section className="relative max-w-7xl mx-auto px-6 pb-24 lg:px-10">
+                <div className="flex items-end justify-between mb-10">
+                    <div>
+                        <h2 className="font-display text-2xl md:text-3xl font-semibold tracking-tight text-fg">
+                            Available workshops
+                        </h2>
+                        <p className="text-sm text-fg-muted mt-1">
+                            {filteredWorkshops.length} {filteredWorkshops.length === 1 ? 'workshop' : 'workshops'} ready to start
+                        </p>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {filteredWorkshops.map((workshop) => (
-                        <div
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredWorkshops.map((workshop, idx) => (
+                        <article
                             key={workshop.id}
                             onClick={() => navigate(`/${workshop.id}`)}
-                            className="group relative flex flex-col bg-gray-900 rounded-2xl border border-white/5 hover:border-blue-500/30 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/10 hover:-translate-y-1 cursor-pointer overflow-hidden"
+                            style={{ animationDelay: `${idx * 60}ms` }}
+                            className="group relative flex flex-col rounded-3xl border border-border-default bg-surface-1 hover:bg-surface transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-elevated)] animate-fade-in"
                         >
-                            {/* Card Decoration */}
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-transparent rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-150 duration-500" />
+                            {/* Top gradient accent */}
+                            <div className="absolute top-0 left-0 right-0 h-[3px] gemini-gradient opacity-0 group-hover:opacity-100 transition-opacity" />
 
-                            <div className="p-8 flex-1 flex flex-col">
-                                <div className="w-12 h-12 bg-gray-800 rounded-xl flex items-center justify-center mb-6 group-hover:bg-blue-500/20 transition-colors">
-                                    <Book className="w-6 h-6 text-blue-400" />
+                            {/* Decorative blur */}
+                            <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full gemini-gradient opacity-0 group-hover:opacity-20 blur-3xl transition-opacity duration-500" />
+
+                            <div className="relative p-7 flex-1 flex flex-col">
+                                <div className="w-12 h-12 rounded-2xl gemini-gradient flex items-center justify-center mb-6 shadow-lg shadow-[var(--color-gemini-purple)]/20 group-hover:scale-110 transition-transform">
+                                    <Sparkles className="w-5 h-5 text-white" />
                                 </div>
 
-                                <h3 className="text-xl font-bold text-white mb-3 group-hover:text-blue-400 transition-colors">
+                                <h3 className="font-display text-xl font-semibold text-fg mb-3 tracking-tight">
                                     {workshop.title}
                                 </h3>
 
-                                <p className="text-gray-400 text-sm leading-relaxed mb-6 line-clamp-3">
+                                <p className="text-sm text-fg-muted leading-relaxed mb-6 line-clamp-3">
                                     {workshop.description}
                                 </p>
 
-                                <div className="mt-auto pt-6 border-t border-white/5 flex items-center justify-between">
-                                    <div className="flex items-center gap-4 text-xs text-gray-500 font-medium">
+                                <div className="mt-auto pt-5 border-t border-border-subtle flex items-center justify-between">
+                                    <div className="flex items-center gap-4 text-xs text-fg-subtle font-medium">
                                         <span className="flex items-center gap-1.5">
                                             <GraduationCap className="w-3.5 h-3.5" />
                                             Intermediate
@@ -184,15 +210,21 @@ const LandingPage: React.FC = () => {
                                             45m
                                         </span>
                                     </div>
-                                    <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-white/5 group-hover:bg-blue-500 text-white transition-all duration-300 transform group-hover:rotate-0 -rotate-45">
-                                        <ChevronRight className="w-4 h-4" />
+                                    <span className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-surface-2 text-fg-muted group-hover:bg-fg group-hover:text-surface transition-all duration-300">
+                                        <ArrowUpRight className="w-4 h-4" />
                                     </span>
                                 </div>
                             </div>
-                        </div>
+                        </article>
                     ))}
                 </div>
-            </div>
+
+                {filteredWorkshops.length === 0 && workshops.length > 0 && (
+                    <div className="text-center py-20 text-fg-muted">
+                        No workshops match “{searchQuery}”. Try a different search.
+                    </div>
+                )}
+            </section>
         </div>
     );
 };

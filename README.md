@@ -1,91 +1,100 @@
+# Workshop Platform
 
-## Run Locally
+A static site for hosting step-by-step, hands-on workshops. Workshops are Markdown files in `public/workshops/`; the app discovers them at startup and renders each as a guided lab with a sidebar of steps, code copying, Mermaid diagrams, and tip/warning callouts.
 
-**Prerequisites:** Node.js
+The UI uses a Gemini-style visual identity with light/dark theme support.
 
-1. Install dependencies:
-   `npm install`
-2. Run the app:
-   `npm run dev`
+## Quick start
 
----
+Requires Node.js 18+.
 
-## Creating a New Workshop
-
-### 1. Create the Markdown file
-
-Add a new `.md` file to `public/workshops/`. The filename becomes the workshop's URL slug.
-
-```
-public/workshops/my-new-workshop.md  ->  /my-new-workshop
+```bash
+npm install
+npm run dev
 ```
 
-The platform auto-discovers all `.md` files in that directory. No registration or configuration needed.
+Open `http://localhost:3000` (Vite falls back to 3001 if 3000 is taken).
 
-> To keep a file out of the landing page while you work on it, prefix the filename with `_` (e.g., `_draft-workshop.md`). Remove the prefix when it is ready to publish.
+To build a production bundle:
 
-### 2. Add frontmatter
-
-Add a frontmatter block at the top of the file to control how the workshop appears on the landing page card:
-
-```markdown
----
-title: My Workshop Title
-description: A one-sentence summary shown on the landing page card.
----
+```bash
+npm run build
+npm run preview
 ```
 
-If frontmatter is omitted, the platform falls back to the first `# Heading` as the title and shows "No description available."
+## Project layout
 
-### 3. Structure the content
+```
+public/
+  workshops/         # *.md files — one per workshop
+  data/              # downloadable assets referenced from workshops
+  pictures/          # screenshots / diagrams referenced from workshops
+src/
+  components/        # LandingPage, WorkshopView, Sidebar, ContentArea, ChatWidget
+  theme/             # ThemeContext (light/dark toggle)
+  utils/markdownParser.ts   # turns workshop .md into steps
+  services/gemini.ts        # optional in-app chat assistant
+```
 
-The parser maps Markdown headings to the sidebar navigation:
+## Writing a workshop
 
-| Heading | Role |
-|---------|------|
-| `#`     | Section label (groups steps in the sidebar) |
-| `##`    | Step (top-level navigation item) |
-| `###`   | Sub-step (nested under its parent step) |
+### 1. Add the file
 
-Example structure:
+Create `public/workshops/<slug>.md`. The slug becomes the URL: `public/workshops/retail.md` → `/retail`.
+
+Files are auto-discovered at dev time and at build time (via a Vite plugin that writes `workshops/index.json`). To hide a draft from the landing page, prefix the filename with `_` (e.g. `_draft-something.md`).
+
+### 2. Frontmatter
 
 ```markdown
 ---
 title: My Workshop
-description: Learn how to build X.
+description: One-sentence summary shown on the landing page card.
 ---
+```
 
+If frontmatter is missing, the title falls back to the first `# Heading` and the description shows `No description available.`.
+
+### 3. Headings map to navigation
+
+| Heading | Role |
+|---------|------|
+| `#`     | Section label — groups steps in the sidebar |
+| `##`    | Step — a top-level entry in the sidebar |
+| `###`   | Sub-step — nested under the parent step |
+
+```markdown
 # Initial Setup
 
 ## Create an Account
-
-Steps here...
+…
 
 ### Configure Credentials
-
-Sub-steps here...
+…
 
 # Labs
 
 ## Lab 1: Build the Flow
-
-Lab content here...
+…
 ```
 
-### 4. Use special content blocks
+### 4. Step metadata (optional)
 
-**Images**
-
-Place image files in `public/pictures/` and reference them with a relative path. Append `|<width>` inside the alt text to constrain the display width:
+The first lines after a `##` or `###` heading can set per-step metadata:
 
 ```markdown
-![](./pictures/my-screenshot.png)
-![|60%](./pictures/my-screenshot.png)
+## Configure Credentials
+duration: 10 min
+id: configure-credentials
+
+Now grab your API key from…
 ```
 
-**Code blocks**
+`duration` shows in the step header. `id` overrides the auto-generated step ID.
 
-Standard fenced code blocks with optional language highlighting. Add `small` alongside the language to render in a smaller font:
+### 5. Content blocks
+
+**Code blocks** — fenced with the language. Add `small` after the language for a denser font:
 
 ````markdown
 ```bash
@@ -97,35 +106,73 @@ print("hello")
 ```
 ````
 
-**Tips and warnings**
+**Mermaid diagrams** — fenced as `mermaid`. Optional width after the language:
 
-```markdown
-> TIP: This is a helpful tip shown in a styled callout.
-
-> WARNING: This is a warning shown in a styled callout.
-
-> NOTE: Plain blockquotes render as regular text with no special styling.
+````markdown
+```mermaid
+flowchart LR
+  A --> B
 ```
 
-**Important / other callouts**
+```mermaid 60%
+graph TD
+  A --> B
+```
+````
+
+The Mermaid theme switches automatically with light/dark mode.
+
+**Images** — Markdown image syntax. Width goes inside the alt text after a pipe:
 
 ```markdown
-> IMPORTANT: This renders as a styled callout similar to WARNING.
+![](./pictures/screenshot.png)
+![Caption text|60%](./pictures/screenshot.png)
 ```
 
-### 5. Add supporting files
+**Callouts** — blockquotes with a recognized prefix:
 
-| File type | Location |
-|-----------|----------|
-| Screenshots and diagrams | `public/pictures/` |
-| Downloadable data files (JSON, CSV, TXT, etc.) | `public/data/` |
+```markdown
+> TIP: Shown in a blue callout with an info icon.
+> WARNING: Shown in a coral callout with a warning icon.
+> NOTE: Plain blockquote, no styling.
+```
 
-Reference downloadable files with an HTML anchor using the `download` attribute:
+**Tables** — standard GFM pipe tables.
+
+**Downloads** — use an HTML anchor with `download`:
 
 ```html
-<a href="../data/my-file.json" download="my-file.json" class="text-blue-400 hover:text-blue-300 underline underline-offset-4">my-file.json</a>
+<a href="../data/sample.json" download="sample.json">sample.json</a>
 ```
 
-### 6. Verify locally
+### 6. Supporting files
 
-Run `npm run dev` and open `http://localhost:3000`. Your workshop will appear on the landing page and be accessible at `http://localhost:3000/my-new-workshop`.
+| Goes here | What for |
+|-----------|----------|
+| `public/data/` | Files the workshop links to with `<a download>` |
+| `public/pictures/` | Images referenced from `![](...)` |
+
+### 7. Verify
+
+`npm run dev` and open the landing page. The new workshop appears as a card and is reachable at `/<slug>`.
+
+## In-app chat assistant (optional)
+
+The `ChatWidget` in the bottom-right hides itself unless a Gemini API key is set. To enable it locally:
+
+```bash
+echo 'VITE_GEMINI_API_KEY=your-key-here' > .env.local
+npm run dev
+```
+
+Get a key from [Google AI Studio](https://aistudio.google.com/apikey). The widget talks to `gemini-3.5-flash` directly from the browser — fine for local development; for production, proxy through a backend so the key isn't shipped to the client.
+
+## Deploy
+
+The project is configured for GitHub Pages via the `gh-pages` package:
+
+```bash
+npm run deploy
+```
+
+This builds to `dist/` and pushes it to the `gh-pages` branch of the repo specified in `package.json#homepage`.

@@ -1,18 +1,21 @@
-import React, { Suspense } from 'react';
+import React from 'react';
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import LandingPage from './components/LandingPage';
 import WorkshopView from './components/WorkshopView';
+import { ThemeProvider } from './theme/ThemeContext';
 
 const App: React.FC = () => {
   return (
-    <Router>
-      <div className="bg-gray-900 min-h-screen text-gray-200">
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/:workshopId" element={<WorkshopView />} />
-        </Routes>
-      </div>
-    </Router>
+    <ThemeProvider>
+      <Router>
+        <div className="min-h-screen bg-surface text-fg transition-colors duration-300">
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/:workshopId" element={<WorkshopView />} />
+          </Routes>
+        </div>
+      </Router>
+    </ThemeProvider>
   );
 };
 

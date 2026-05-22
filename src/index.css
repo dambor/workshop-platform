@@ -1,48 +1,304 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ----------------------------------------------------------------
+   Gemini Workshops — Design System
+   Visual language inspired by Google Gemini AI Visual Design.
+   ---------------------------------------------------------------- */
+
 @theme {
-  --color-langflow-bg: #09090b;
-  --color-langflow-sidebar: #18181b;
-  --color-langflow-card: #27272a;
-  --color-langflow-primary: #c084fc;
-  --color-langflow-accent: #3b82f6;
+  /* Gemini signature palette */
+  --color-gemini-blue: #4796e3;
+  --color-gemini-indigo: #6b7bf1;
+  --color-gemini-purple: #b16ee7;
+  --color-gemini-pink: #e07acb;
+  --color-gemini-coral: #f58f60;
+  --color-gemini-amber: #fbbc04;
 
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  /* Semantic tokens (resolved at runtime via :root / .dark) */
+  --color-surface: var(--surface);
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-overlay: var(--overlay);
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+  --color-fg-subtle: var(--fg-subtle);
+  --color-border-subtle: var(--border-subtle);
+  --color-border-default: var(--border-default);
+  --color-border-strong: var(--border-strong);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
 
-  --animate-pulse-slow: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --font-sans:
+    "Google Sans", "Inter", ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, sans-serif;
+  --font-display:
+    "Google Sans Display", "Google Sans", "Inter", ui-sans-serif, system-ui,
+    sans-serif;
+  --font-mono:
+    "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  --animate-shimmer: shimmer 8s linear infinite;
+  --animate-sparkle: sparkle 3s ease-in-out infinite;
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-fade-in: fadeIn 0.6s ease-out;
+}
+
+/* ----- Light theme (default) ------------------------------------ */
+:root {
+  --surface: #ffffff;
+  --surface-1: #f8f9fb;
+  --surface-2: #f1f3f7;
+  --surface-3: #e8ebf2;
+  --overlay: rgba(255, 255, 255, 0.72);
+
+  --fg: #1f1f23;
+  --fg-muted: #5f6368;
+  --fg-subtle: #80868b;
+
+  --border-subtle: rgba(15, 15, 25, 0.06);
+  --border-default: rgba(15, 15, 25, 0.1);
+  --border-strong: rgba(15, 15, 25, 0.18);
+
+  --accent: #6b7bf1;
+  --accent-soft: rgba(107, 123, 241, 0.12);
+
+  --shadow-elevated: 0 12px 32px -12px rgba(20, 24, 64, 0.18),
+    0 4px 12px -4px rgba(20, 24, 64, 0.08);
+  --shadow-card: 0 2px 8px -2px rgba(20, 24, 64, 0.06),
+    0 1px 2px -1px rgba(20, 24, 64, 0.04);
+
+  color-scheme: light;
+}
+
+/* ----- Dark theme ----------------------------------------------- */
+.dark {
+  --surface: #0b0b12;
+  --surface-1: #13131c;
+  --surface-2: #1c1c28;
+  --surface-3: #272736;
+  --overlay: rgba(11, 11, 18, 0.72);
+
+  --fg: #f4f4f7;
+  --fg-muted: #a8a8b8;
+  --fg-subtle: #6e6e80;
+
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-default: rgba(255, 255, 255, 0.1);
+  --border-strong: rgba(255, 255, 255, 0.18);
+
+  --accent: #b16ee7;
+  --accent-soft: rgba(177, 110, 231, 0.18);
+
+  --shadow-elevated: 0 24px 56px -20px rgba(0, 0, 0, 0.7),
+    0 8px 20px -8px rgba(0, 0, 0, 0.5);
+  --shadow-card: 0 2px 8px -2px rgba(0, 0, 0, 0.4),
+    0 1px 2px -1px rgba(0, 0, 0, 0.25);
+
+  color-scheme: dark;
 }
 
 @layer base {
+  html,
+  body {
+    background-color: var(--surface);
+    color: var(--fg);
+  }
+
   body {
     font-family: var(--font-sans);
-    background-color: var(--color-langflow-bg);
-    color: #e4e4e7;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::selection {
+    background: var(--accent-soft);
+    color: var(--fg);
   }
 }
 
 @layer components {
-  .glass-panel {
-    background: rgba(39, 39, 42, 0.6);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+  /* The Gemini signature gradient — blue → purple → coral */
+  .gemini-gradient {
+    background-image: linear-gradient(
+      135deg,
+      var(--color-gemini-blue) 0%,
+      var(--color-gemini-indigo) 28%,
+      var(--color-gemini-purple) 58%,
+      var(--color-gemini-pink) 82%,
+      var(--color-gemini-coral) 100%
+    );
+  }
+
+  .gemini-gradient-text {
+    background-image: linear-gradient(
+      120deg,
+      var(--color-gemini-blue) 0%,
+      var(--color-gemini-indigo) 28%,
+      var(--color-gemini-purple) 58%,
+      var(--color-gemini-pink) 82%,
+      var(--color-gemini-coral) 100%
+    );
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    background-size: 200% 200%;
+    animation: gradientShift 12s ease infinite;
+  }
+
+  .gemini-gradient-border {
+    position: relative;
+    background-clip: padding-box;
+  }
+
+  .gemini-gradient-border::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      135deg,
+      var(--color-gemini-blue),
+      var(--color-gemini-purple),
+      var(--color-gemini-coral)
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  .glass-surface {
+    background-color: color-mix(in srgb, var(--surface) 72%, transparent);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    border: 1px solid var(--border-subtle);
+  }
+
+  .aurora-bg {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .aurora-bg::before,
+  .aurora-bg::after {
+    content: "";
+    position: absolute;
+    border-radius: 9999px;
+    filter: blur(80px);
+    opacity: 0.5;
+    will-change: transform;
+  }
+
+  .aurora-bg::before {
+    width: 540px;
+    height: 540px;
+    top: -160px;
+    left: -120px;
+    background: radial-gradient(
+      circle,
+      var(--color-gemini-blue) 0%,
+      transparent 70%
+    );
+    animation: float 14s ease-in-out infinite;
+  }
+
+  .aurora-bg::after {
+    width: 600px;
+    height: 600px;
+    bottom: -200px;
+    right: -160px;
+    background: radial-gradient(
+      circle,
+      var(--color-gemini-coral) 0%,
+      var(--color-gemini-purple) 40%,
+      transparent 75%
+    );
+    animation: float 18s ease-in-out infinite reverse;
+  }
+
+  .dark .aurora-bg::before,
+  .dark .aurora-bg::after {
+    opacity: 0.35;
   }
 }
 
-/* Custom Scrollbar */
+@keyframes gradientShift {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes sparkle {
+  0%,
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.08) rotate(8deg);
+    opacity: 0.85;
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(30px, -40px) scale(1.08);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ----- Scrollbar ------------------------------------------------ */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #18181b;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #3f3f46;
-  border-radius: 4px;
+  background: var(--border-default);
+  border-radius: 999px;
+  border: 2px solid var(--surface);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #52525b;
+  background: var(--border-strong);
 }

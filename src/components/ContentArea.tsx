@@ -1,34 +1,17 @@
 import React from 'react';
 import mermaid from 'mermaid';
+import { Check, Copy, Info, AlertTriangle } from 'lucide-react';
 import { StepContent, WorkshopStep } from '../types';
+import { useTheme } from '../theme/ThemeContext';
+import { ThemeToggle } from './ThemeToggle';
 
-mermaid.initialize({
-  startOnLoad: false,
-  theme: 'base',
-  themeVariables: {
-    background: 'transparent',
-    primaryColor: '#3f3f46',
-    primaryTextColor: '#f4f4f5',
-    primaryBorderColor: '#71717a',
-    lineColor: '#a1a1aa',
-    secondaryColor: '#27272a',
-    tertiaryColor: '#27272a',
-    edgeLabelBackground: '#27272a',
-    clusterBkg: '#18181b',
-    clusterBorder: '#52525b',
-    titleColor: '#f4f4f5',
-    nodeTextColor: '#f4f4f5',
-    fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
-  },
-});
-
-// --- individual renderers, each with hooks at the top level ---
+// --- inline markdown helpers ---
 
 const inline = (text: string) =>
   text
-    .replace(/\*\*(.*?)\*\*/gim, '<strong class="text-langflow-accent font-semibold">$1</strong>')
-    .replace(/`([^`]+)`/gim, '<code class="bg-black/30 text-pink-300 px-1.5 py-0.5 rounded text-sm border border-white/10">$1</code>')
-    .replace(/\[(.*?)\]\((.*?)\)/gim, '<a href="$2" target="_blank" class="text-blue-400 hover:text-blue-300 underline underline-offset-4">$1</a>');
+    .replace(/\*\*(.*?)\*\*/gim, '<strong class="font-semibold text-fg">$1</strong>')
+    .replace(/`([^`]+)`/gim, '<code class="bg-surface-2 text-[var(--color-gemini-purple)] dark:text-[var(--color-gemini-pink)] px-1.5 py-0.5 rounded-md text-[0.9em] font-mono border border-border-subtle">$1</code>')
+    .replace(/\[(.*?)\]\((.*?)\)/gim, '<a href="$2" target="_blank" class="text-[var(--color-gemini-indigo)] hover:underline underline-offset-4">$1</a>');
 
 const parseRow = (row: string) => row.split('|').slice(1, -1).map((c) => c.trim());
 const isSeparator = (line: string) => /^\|[\s\-:|]+\|$/.test(line.trim());
@@ -41,7 +24,6 @@ const TextBlock: React.FC<{ value: string }> = ({ value }) => {
   while (i < lines.length) {
     const trimmed = lines[i].trim();
 
-    // Table: current line has pipes and next line is a separator row
     if (trimmed.startsWith('|') && i + 1 < lines.length && isSeparator(lines[i + 1])) {
       const tableLines: string[] = [];
       while (i < lines.length && lines[i].trim().startsWith('|')) {
@@ -51,17 +33,17 @@ const TextBlock: React.FC<{ value: string }> = ({ value }) => {
       const headers = parseRow(tableLines[0]);
       const rows = tableLines.slice(2).map(parseRow);
 
-      let t = `<div class="my-6 overflow-x-auto rounded-lg border border-white/10">`;
+      let t = `<div class="my-6 overflow-x-auto rounded-2xl border border-border-default">`;
       t += `<table class="w-full text-sm border-collapse">`;
       t += `<thead><tr>`;
       headers.forEach((h) => {
-        t += `<th class="px-4 py-3 text-left text-white font-semibold bg-white/5 border-b border-white/10 whitespace-nowrap">${inline(h)}</th>`;
+        t += `<th class="px-4 py-3 text-left text-fg font-semibold bg-surface-2 border-b border-border-default whitespace-nowrap">${inline(h)}</th>`;
       });
       t += `</tr></thead><tbody>`;
       rows.forEach((row, ri) => {
-        t += `<tr class="${ri % 2 === 1 ? 'bg-white/[0.02]' : ''}">`;
+        t += `<tr class="${ri % 2 === 1 ? 'bg-surface-1' : ''}">`;
         row.forEach((cell) => {
-          t += `<td class="px-4 py-2.5 text-gray-300 border-t border-white/5">${inline(cell)}</td>`;
+          t += `<td class="px-4 py-2.5 text-fg-muted border-t border-border-subtle">${inline(cell)}</td>`;
         });
         t += `</tr>`;
       });
@@ -70,16 +52,15 @@ const TextBlock: React.FC<{ value: string }> = ({ value }) => {
       continue;
     }
 
-    // Headings
     const h1 = trimmed.match(/^# (.+)$/);
     const h2 = trimmed.match(/^## (.+)$/);
     const h3 = trimmed.match(/^### (.+)$/);
     if (h1) {
-      parts.push(`<h1 class="text-3xl font-bold text-white mb-6 mt-2">${inline(h1[1])}</h1>`);
+      parts.push(`<h1 class="font-display text-4xl font-semibold tracking-tight text-fg mb-6 mt-2">${inline(h1[1])}</h1>`);
     } else if (h2) {
-      parts.push(`<h2 class="text-2xl font-semibold text-white mb-4 mt-8 pb-2 border-b border-white/10">${inline(h2[1])}</h2>`);
+      parts.push(`<h2 class="font-display text-2xl font-semibold tracking-tight text-fg mb-4 mt-10 pb-3 border-b border-border-subtle">${inline(h2[1])}</h2>`);
     } else if (h3) {
-      parts.push(`<h3 class="text-xl font-medium text-langflow-primary mb-3 mt-6">${inline(h3[1])}</h3>`);
+      parts.push(`<h3 class="font-display text-xl font-medium tracking-tight gemini-gradient-text mb-3 mt-6">${inline(h3[1])}</h3>`);
     } else if (trimmed === '') {
       parts.push('<br />');
     } else {
@@ -90,7 +71,7 @@ const TextBlock: React.FC<{ value: string }> = ({ value }) => {
 
   return (
     <div
-      className="text-gray-300 leading-relaxed mb-4 text-lg"
+      className="text-fg-muted leading-relaxed mb-4 text-[17px]"
       dangerouslySetInnerHTML={{ __html: parts.join('') }}
     />
   );
@@ -106,29 +87,27 @@ const CodeBlock: React.FC<{ value: string; language?: string; small?: boolean }>
   };
 
   return (
-    <div className="my-6 relative group">
-      <div className="absolute top-0 right-0 flex items-center">
-        <div className="px-3 py-1 text-xs font-mono text-gray-500 bg-black/40 rounded-bl border-b border-l border-white/10">
-          {language}
-        </div>
+    <div className="my-6 relative group rounded-2xl overflow-hidden border border-border-default bg-surface-2">
+      <div className="flex items-center justify-between px-4 py-2 border-b border-border-subtle bg-surface-1">
+        <span className="text-xs font-mono text-fg-subtle">{language || 'plain'}</span>
         <button
           onClick={handleCopy}
-          className="px-3 py-1 text-xs font-mono text-gray-400 bg-white/5 hover:bg-white/10 border-b border-l border-white/10 transition-colors flex items-center gap-1 rounded-bl-lg"
-          title="Copy code"
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-fg-muted hover:text-fg transition-colors px-2 py-1 rounded-md hover:bg-surface-2"
         >
           {copied ? (
-            <span className="text-green-400 font-bold">Copied!</span>
+            <>
+              <Check className="w-3.5 h-3.5 text-[var(--color-gemini-indigo)]" />
+              <span className="text-[var(--color-gemini-indigo)]">Copied</span>
+            </>
           ) : (
-            <span className="flex items-center gap-1">
-              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-              </svg>
+            <>
+              <Copy className="w-3.5 h-3.5" />
               Copy
-            </span>
+            </>
           )}
         </button>
       </div>
-      <pre className={`bg-[#0f0f11] border border-white/10 p-4 rounded-lg overflow-x-auto font-mono text-gray-200 shadow-inner pt-8 ${small ? 'text-xs' : 'text-sm'}`}>
+      <pre className={`p-4 overflow-x-auto font-mono text-fg ${small ? 'text-xs' : 'text-sm'} leading-relaxed`}>
         <code>{value}</code>
       </pre>
     </div>
@@ -137,40 +116,58 @@ const CodeBlock: React.FC<{ value: string; language?: string; small?: boolean }>
 
 const ImageBlock: React.FC<{ value: string; alt?: string; width?: string }> = ({ value, alt, width }) => (
   <div className="my-8 flex flex-col items-center">
-    <div className="rounded-xl overflow-hidden border border-white/10 shadow-2xl" style={{ width: width ?? '100%' }}>
+    <div className="rounded-2xl overflow-hidden border border-border-default shadow-[var(--shadow-elevated)]" style={{ width: width ?? '100%' }}>
       <img src={value} alt={alt} className="w-full h-auto object-cover" />
     </div>
-    {alt && <p className="text-center text-gray-500 text-sm mt-2 italic">{alt}</p>}
+    {alt && <p className="text-center text-fg-subtle text-sm mt-3 italic">{alt}</p>}
   </div>
 );
 
 const WarningBlock: React.FC<{ value: string }> = ({ value }) => (
-  <div className="my-6 bg-yellow-900/20 border-l-4 border-yellow-500 p-4 rounded-r text-yellow-200">
+  <div className="my-6 rounded-2xl border border-[var(--color-gemini-coral)]/30 bg-[var(--color-gemini-coral)]/8 p-5">
     <div className="flex items-start gap-3">
-      <svg className="w-6 h-6 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-      </svg>
-      <div>{value}</div>
+      <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5 text-[var(--color-gemini-coral)]" />
+      <div className="text-fg leading-relaxed text-[15px]">{value}</div>
     </div>
   </div>
 );
 
 const TipBlock: React.FC<{ value: string }> = ({ value }) => (
-  <div className="my-6 bg-blue-900/20 border-l-4 border-blue-500 p-4 rounded-r text-blue-100">
+  <div className="my-6 rounded-2xl border border-[var(--color-gemini-indigo)]/30 bg-[var(--color-gemini-indigo)]/8 p-5">
     <div className="flex items-start gap-3">
-      <svg className="w-6 h-6 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-      <div>{value}</div>
+      <Info className="w-5 h-5 shrink-0 mt-0.5 text-[var(--color-gemini-indigo)]" />
+      <div className="text-fg leading-relaxed text-[15px]">{value}</div>
     </div>
   </div>
 );
 
 const MermaidDiagram: React.FC<{ chart: string; width?: string }> = ({ chart, width }) => {
+  const { theme } = useTheme();
   const [svgHtml, setSvgHtml] = React.useState('');
   const [error, setError] = React.useState(false);
 
   React.useEffect(() => {
+    const isDark = theme === 'dark';
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: 'base',
+      themeVariables: {
+        background: 'transparent',
+        primaryColor: isDark ? '#1c1c28' : '#f1f3f7',
+        primaryTextColor: isDark ? '#f4f4f7' : '#1f1f23',
+        primaryBorderColor: '#b16ee7',
+        lineColor: isDark ? '#a8a8b8' : '#5f6368',
+        secondaryColor: isDark ? '#272736' : '#e8ebf2',
+        tertiaryColor: isDark ? '#13131c' : '#f8f9fb',
+        edgeLabelBackground: isDark ? '#1c1c28' : '#ffffff',
+        clusterBkg: isDark ? '#13131c' : '#f8f9fb',
+        clusterBorder: isDark ? '#3a3a4a' : '#d8dbe2',
+        titleColor: isDark ? '#f4f4f7' : '#1f1f23',
+        nodeTextColor: isDark ? '#f4f4f7' : '#1f1f23',
+        fontFamily: 'Google Sans, Inter, ui-sans-serif, system-ui, sans-serif',
+      },
+    });
+
     const id = `mermaid-${Math.random().toString(36).slice(2)}`;
     let cancelled = false;
     setError(false);
@@ -185,7 +182,6 @@ const MermaidDiagram: React.FC<{ chart: string; width?: string }> = ({ chart, wi
         if (svgEl) {
           svgEl.setAttribute('width', '100%');
           svgEl.removeAttribute('height');
-          // Override the background rect via the embedded <style> block
           const styleEl = svgEl.querySelector('style');
           if (styleEl) styleEl.textContent += '\n.background { fill: transparent !important; }';
           const bgEl = svgEl.querySelector('.background');
@@ -202,22 +198,22 @@ const MermaidDiagram: React.FC<{ chart: string; width?: string }> = ({ chart, wi
       });
 
     return () => { cancelled = true; };
-  }, [chart]);
+  }, [chart, theme]);
 
   if (error) {
     return (
-      <pre className="my-8 p-4 bg-red-900/20 border border-red-500/30 rounded text-red-300 text-xs overflow-x-auto">
+      <pre className="my-8 p-4 bg-[var(--color-gemini-coral)]/10 border border-[var(--color-gemini-coral)]/30 rounded-2xl text-[var(--color-gemini-coral)] text-xs overflow-x-auto">
         {chart}
       </pre>
     );
   }
 
   if (!svgHtml) {
-    return <div className="my-8 h-40 animate-pulse bg-white/5 rounded-lg" />;
+    return <div className="my-8 h-40 animate-pulse bg-surface-2 rounded-2xl" />;
   }
 
   return (
-    <div className="my-8 overflow-x-auto flex justify-center">
+    <div className="my-8 overflow-x-auto flex justify-center p-6 rounded-2xl border border-border-subtle bg-surface-1">
       <div
         style={{ width: width ?? '100%' }}
         dangerouslySetInnerHTML={{ __html: svgHtml }}
@@ -250,27 +246,30 @@ interface ContentAreaProps {
   isLast: boolean;
 }
 
-export const ContentArea: React.FC<ContentAreaProps> = ({ step, onNext, onPrev, isFirst, isLast }) => {
+export const ContentArea: React.FC<ContentAreaProps> = ({ step }) => {
   const scrollRef = React.useRef<HTMLDivElement>(null);
   React.useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = 0;
   }, [step.id]);
 
   return (
-    <div className="flex-1 h-screen overflow-hidden flex flex-col bg-langflow-bg relative">
-      <header className="h-16 border-b border-white/5 flex items-center px-8 bg-langflow-bg/50 backdrop-blur z-10 justify-between">
-        <div className="flex items-center gap-2 text-sm text-gray-400">
+    <div className="flex-1 h-screen overflow-hidden flex flex-col bg-surface relative">
+      <header className="h-16 border-b border-border-subtle flex items-center px-8 bg-surface/70 backdrop-blur-xl z-10 justify-between">
+        <div className="flex items-center gap-2 text-sm text-fg-muted min-w-0">
           <span>Workshop</span>
-          <span>/</span>
-          <span className="text-white font-medium">{step.title}</span>
+          <span className="text-fg-subtle">/</span>
+          <span className="text-fg font-medium truncate">{step.title}</span>
         </div>
-        <div className="text-xs font-mono px-2 py-1 bg-white/5 rounded border border-white/5 text-gray-400">
-          Time: {step.duration}
+        <div className="flex items-center gap-3">
+          <div className="text-xs font-medium px-3 py-1.5 bg-surface-1 rounded-full border border-border-subtle text-fg-muted">
+            {step.duration}
+          </div>
+          <ThemeToggle />
         </div>
       </header>
 
       <main ref={scrollRef} className="flex-1 overflow-y-auto w-full">
-        <div className="max-w-5xl mx-auto p-8 lg:px-24">
+        <div className="max-w-4xl mx-auto px-8 py-12 lg:px-16">
           {step.content.map((item, idx) => (
             <RenderItem key={idx} item={item} />
           ))}
