@@ -1,0 +1,143 @@
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Sidebar } from './Sidebar';
+import { ContentArea } from './ContentArea';
+import { ChatWidget } from './ChatWidget';
+import { parseWorkshopMarkdown } from '../utils/markdownParser';
+import { WorkshopStep } from '../types';
+
+const WorkshopView: React.FC = () => {
+  const { workshopId } = useParams<{ workshopId: string }>();
+  const navigate = useNavigate();
+  const [steps, setSteps] = useState<WorkshopStep[]>([]);
+  const [currentStepIndex, setCurrentStepIndex] = useState(() => {
+    const saved = sessionStorage.getItem(`workshop-step-${workshopId}`);
+    return saved !== null ? parseInt(saved, 10) : 0;
+  });
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadWorkshop = async () => {
+      try {
+        setLoading(true);
+
+        // Try local path first (works in dev and when served locally)
+        const basePath = import.meta.env.BASE_URL || '/';
+        const localUrl = `${basePath}workshops/${workshopId}.md`;
+        let response = await fetch(localUrl);
+
+        // Fall back to GitHub Raw if local fetch fails
+        if (!response.ok) {
+          const repoOwner = 'dambor';
+          const repoName = 'workshop-platform';
+          const rawUrl = `https://raw.githubusercontent.com/${repoOwner}/${repoName}/main/public/workshops/${workshopId}.md`;
+          response = await fetch(rawUrl);
+        }
+
+        if (!response.ok) {
+          throw new Error('Workshop file not found');
+        }
+
+        const content = await response.text();
+        const parsedSteps = parseWorkshopMarkdown(content);
+        setSteps(parsedSteps);
+        setLoading(false);
+      } catch (err) {
+        console.error(err);
+        setError('Workshop not found or failed to load.');
+        setLoading(false);
+      }
+    };
+
+    if (workshopId) {
+      loadWorkshop();
+    }
+  }, [workshopId]);
+
+
+  useEffect(() => {
+    sessionStorage.setItem(`workshop-step-${workshopId}`, String(currentStepIndex));
+  }, [currentStepIndex, workshopId]);
+
+  const currentStep = steps[currentStepIndex];
+
+  const handleNext = () => {
+    if (currentStepIndex < steps.length - 1) {
+      setCurrentStepIndex(prev => prev + 1);
+    }
+  };
+
+  const handlePrev = () => {
+    if (currentStepIndex > 0) {
+      setCurrentStepIndex(prev => prev - 1);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-gray-900 text-gray-200">
+        Loading workshop...
+      </div>
+    );
+  }
+
+  if (error || steps.length === 0) {
+    return (
+      <div className="flex flex-col h-screen w-full items-center justify-center bg-gray-900 text-red-400 gap-4">
+        <div>{error || 'No content found.'}</div>
+        <button
+          onClick={() => navigate('/')}
+          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-500 transition-colors"
+        >
+          Back to Workshops
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex h-screen w-full overflow-hidden bg-gray-900 text-gray-200">
+      {/* Mobile Sidebar Toggle */}
+      <button
+        className="lg:hidden absolute top-4 left-4 z-50 p-2 bg-gray-800 rounded-md border border-white/10"
+        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+      >
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+      </button>
+
+      {/* Sidebar Wrapper for Mobile */}
+      <div className={`fixed inset-0 z-40 lg:static lg:block transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        }`}>
+        <div className="flex h-full">
+          <Sidebar
+            steps={steps}
+            currentStepIndex={currentStepIndex}
+            onSelectStep={(idx) => {
+              setCurrentStepIndex(idx);
+              if (window.innerWidth < 1024) setIsSidebarOpen(false);
+            }}
+          />
+          {/* Overlay for mobile */}
+          <div
+            className="flex-1 bg-black/50 lg:hidden"
+            onClick={() => setIsSidebarOpen(false)}
+          ></div>
+        </div>
+      </div>
+
+      <ContentArea
+        step={currentStep}
+        onNext={handleNext}
+        onPrev={handlePrev}
+        isFirst={currentStepIndex === 0}
+        isLast={currentStepIndex === steps.length - 1}
+      />
+
+      <ChatWidget />
+    </div>
+  );
+};
+
+export default WorkshopView;

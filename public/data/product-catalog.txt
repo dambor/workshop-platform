@@ -1,0 +1,126 @@
+PRODUCT CATALOG - TRAILHEAD OUTDOOR & SPORTSWEAR
+
+--- FOOTWEAR ---
+
+Product: TrailRunner Pro 4.0
+Category: Running Shoes
+Price: $89.99
+SKU: FR-1001
+Features: Lightweight mesh upper, cushioned midsole, anti-slip rubber outsole, breathable lining
+Sizes: 6-13 (Men), 5-12 (Women)
+Colors: Black/White, Blue/Grey, Coral/White
+Best For: Road running, light trail, everyday training
+In Stock: Yes
+
+Product: Summit Hiker GTX
+Category: Hiking Boots
+Price: $149.99
+SKU: HB-2001
+Features: GORE-TEX waterproof membrane, ankle support, Vibram outsole, padded collar, moisture-wicking lining
+Sizes: 7-13 (Men), 6-11 (Women)
+Colors: Brown/Tan, Grey/Black
+Best For: Day hikes, backpacking, wet terrain
+In Stock: Yes
+
+Product: UrbanStride Sneaker
+Category: Casual Footwear
+Price: $64.99
+SKU: CS-1005
+Features: Canvas upper, memory foam insole, vulcanized sole, slip-on design
+Sizes: 5-13
+Colors: White, Navy, Olive
+Best For: Everyday wear, light walking
+In Stock: Yes
+
+--- OUTERWEAR ---
+
+Product: Arctic Shield Parka
+Category: Winter Jacket
+Price: $219.99
+SKU: WJ-3001
+Features: 650-fill down insulation, windproof shell, adjustable hood, 4 zippered pockets, water-resistant coating
+Sizes: XS-3XL
+Colors: Black, Navy, Forest Green, Burgundy
+Best For: Extreme cold weather, winter activities, outdoor work
+In Stock: Yes
+
+Product: TrailBreaker Softshell
+Category: Outdoor Jacket
+Price: $119.99
+SKU: OJ-3005
+Features: 3-layer softshell construction, stretch panels for mobility, fleece-lined collar, pit-zip venting, DWR finish
+Sizes: XS-2XL
+Colors: Charcoal, Olive, Royal Blue
+Best For: Hiking, climbing, variable weather conditions
+In Stock: Yes
+
+Product: Velocity Windrunner
+Category: Running Jacket
+Price: $74.99
+SKU: RJ-3010
+Features: Packable design, reflective accents, half-zip, moisture-wicking interior, elastic cuffs
+Sizes: XS-2XL
+Colors: Neon Yellow, Black, Electric Blue
+Best For: Running, cycling, light outdoor activity
+In Stock: Yes
+
+--- ACTIVEWEAR ---
+
+Product: FlexCore Compression Tights
+Category: Running Tights
+Price: $54.99
+SKU: AT-4001
+Features: 4-way stretch fabric, flatlock seams, zippered back pocket, UPF 40+ protection, moisture-wicking
+Sizes: XS-2XL
+Colors: Black, Midnight Blue, Charcoal
+Best For: Running, cycling, gym workouts
+In Stock: Yes
+
+Product: Summit Base Layer Set
+Category: Thermal Underwear
+Price: $79.99
+SKU: BL-4005
+Features: Merino wool blend, 2-piece set (top + bottom), odor-resistant, temperature-regulating, flatlock seams
+Sizes: S-2XL
+Colors: Grey, Black, Dark Navy
+Best For: Cold weather layering, hiking, skiing
+In Stock: Yes
+
+Product: AllSport Performance Tee
+Category: Athletic T-Shirt
+Price: $34.99
+SKU: AT-4010
+Features: Quick-dry polyester, anti-odor treatment, raglan sleeves, mesh ventilation panels
+Sizes: XS-3XL
+Colors: White, Black, Red, Blue, Grey
+Best For: Running, gym, outdoor sports
+In Stock: Yes
+
+--- GEAR & ACCESSORIES ---
+
+Product: HydroMax Trail Pack 20L
+Category: Hiking Backpack
+Price: $94.99
+SKU: BP-5001
+Features: 20L capacity, hydration bladder compatible (bladder not included), padded hip belt, trekking pole attachment, multiple compartments
+Colors: Slate Grey, Forest Green, Burnt Orange
+Best For: Day hikes, trail running, commuting
+In Stock: Yes
+
+Product: PeakLight Headlamp 350
+Category: Headlamp
+Price: $44.99
+SKU: GL-5010
+Features: 350 lumens, 3 light modes, IPX6 water resistance, 6-hour battery life, adjustable strap
+Colors: Black, Red
+Best For: Night hiking, camping, emergency preparedness
+In Stock: Yes
+
+Product: ThermaFlask 32oz
+Category: Water Bottle
+Price: $29.99
+SKU: WB-5020
+Features: Double-wall vacuum insulation, 32oz capacity, keeps cold 24h / hot 12h, BPA-free, leak-proof lid
+Colors: Stainless, Black, White, Sky Blue
+Best For: Hiking, running, gym, office
+In Stock: Yes
