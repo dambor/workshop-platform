@@ -1,0 +1,3 @@
+{"customer_id":"C001","name":"Sarah Johnson","email":"your-email@example.com","loyalty_tier":"Gold","join_date":"2022-06-15","preferred_categories":["Outerwear","Hiking"]}
+{"customer_id":"C002","name":"Mike Chen","email":"your-email@example.com","loyalty_tier":"New Customer","join_date":"2025-03-01","preferred_categories":["Running","Trail"]}
+{"customer_id":"C003","name":"Emma Davis","email":"your-email@example.com","loyalty_tier":"Silver","join_date":"2023-11-20","preferred_categories":["Activewear","Running"]}

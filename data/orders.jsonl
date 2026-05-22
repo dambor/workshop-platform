@@ -1,0 +1,9 @@
+{"order_id":"O001","customer_id":"C001","status":"completed","items":[{"product_id":"HB-2001","quantity":1}],"total_usd":149.99,"created_at":"2023-02-10T10:15:00Z"}
+{"order_id":"O002","customer_id":"C001","status":"completed","items":[{"product_id":"AT-4001","quantity":1}],"total_usd":54.99,"created_at":"2023-08-22T14:32:00Z"}
+{"order_id":"O003","customer_id":"C001","status":"completed","items":[{"product_id":"WB-5020","quantity":1}],"total_usd":29.99,"created_at":"2024-01-05T09:48:00Z"}
+{"order_id":"O004","customer_id":"C001","status":"completed","items":[{"product_id":"BL-4005","quantity":1}],"total_usd":79.99,"created_at":"2024-11-18T16:05:00Z"}
+{"order_id":"O005","customer_id":"C001","status":"abandoned","items":[{"product_id":"WJ-3001","quantity":1}],"total_usd":219.99,"created_at":"2025-03-28T19:22:00Z"}
+{"order_id":"O006","customer_id":"C002","status":"abandoned","items":[{"product_id":"FR-1001","quantity":1},{"product_id":"BP-5001","quantity":1}],"total_usd":184.98,"created_at":"2025-03-30T11:47:00Z"}
+{"order_id":"O007","customer_id":"C003","status":"completed","items":[{"product_id":"AT-4010","quantity":1}],"total_usd":34.99,"created_at":"2023-12-05T13:11:00Z"}
+{"order_id":"O008","customer_id":"C003","status":"completed","items":[{"product_id":"RJ-3010","quantity":1}],"total_usd":74.99,"created_at":"2024-06-14T18:30:00Z"}
+{"order_id":"O009","customer_id":"C003","status":"abandoned","items":[{"product_id":"OJ-3005","quantity":1}],"total_usd":119.99,"created_at":"2025-03-25T20:08:00Z"}
