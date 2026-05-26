@@ -43,6 +43,10 @@ const WorkshopView: React.FC = () => {
         const content = await response.text();
         const parsedSteps = parseWorkshopMarkdown(content);
         setSteps(parsedSteps);
+        // A previously saved step index (sessionStorage) can be out of range if the
+        // workshop's step count changed since the last visit. Clamp it so we never
+        // index past the end and render an undefined step.
+        setCurrentStepIndex(prev => Math.min(Math.max(prev, 0), Math.max(0, parsedSteps.length - 1)));
         setLoading(false);
       } catch (err) {
         console.error(err);
@@ -61,7 +65,10 @@ const WorkshopView: React.FC = () => {
     sessionStorage.setItem(`workshop-step-${workshopId}`, String(currentStepIndex));
   }, [currentStepIndex, workshopId]);
 
-  const currentStep = steps[currentStepIndex];
+  // Guard against an out-of-range index (e.g. stale sessionStorage) so we never
+  // pass an undefined step to ContentArea.
+  const safeStepIndex = steps.length ? Math.min(Math.max(currentStepIndex, 0), steps.length - 1) : 0;
+  const currentStep = steps[safeStepIndex];
 
   const handleNext = () => {
     if (currentStepIndex < steps.length - 1) {
