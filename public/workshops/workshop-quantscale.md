@@ -1,75 +1,65 @@
 ---
 title: QuantScale: Building High-Throughput, Scale-to-Zero LLM Pipelines for Quant Research
-description: Learn how to process massive historical financial datasets with Gemini Flash + Flex pricing, serve immutable OSS models for deterministic backtesting, and scale prediction endpoints to 3,000+ Spot GPU nodes.
+description: Learn how to process massive historical financial datasets with Gemini Flash + the Flex service tier, serve immutable OSS models for reproducible backtesting, and scale prediction endpoints across thousands of Spot GPU nodes.
 ---
-
 # QuantScale Overview
 
-## Workshop Overview & Objectives
+Welcome to **QuantScale: Building High-Throughput, Scale-to-Zero LLM Pipelines for Quant Research**.
 
-Welcome to **QuantScale: Building High-Throughput, Scale-to-Zero LLM Pipelines for Quant Research**. 
+In quantitative finance, data is the ultimate competitive advantage. Researchers need to process petabytes of unstructured text — earnings transcripts, SEC filings, alternative web datasets, market news — to extract alpha. Doing that on typical SaaS generative-AI endpoints creates three frictions:
 
-In the high-stakes world of quantitative finance, data is the ultimate competitive advantage. Quantitative researchers and data scientists need to process petabytes of unstructured text—earnings transcripts, SEC filings, alternative web datasets, and market news—to extract alpha. However, doing so using typical SaaS-based generative AI endpoints leads to major friction:
-- **Throughput Throttling:** Pay-as-you-go rate limits (TPM/RPM) choke massive backtesting workloads.
-- **Runaway Costs:** Idle resources and high-latency premium pricing drain compute budgets.
-- **Proprietary Model Drift:** Proprietary models update or deprecate without warning, breaking backtesting consistency and altering the mathematical determinism of historical trading signals.
+- **Throughput throttling:** Pay-as-you-go rate limits (TPM/RPM) choke massive backtesting workloads.
+- **Runaway costs:** Idle resources and premium real-time pricing drain compute budgets.
+- **Model drift:** Proprietary models update or deprecate without warning, breaking the reproducibility of historical trading signals.
 
-This workshop is designed to solve these exact friction points by demonstrating a production-grade, highly scalable, and cost-efficient LLM pipeline architecture built on Google Cloud.
+This workshop solves each one with a production-grade, cost-efficient LLM pipeline on Google Cloud.
 
 ```mermaid
 flowchart TD
-    A[Historical Text Corpus\nEarnings, 10-Ks, News] --> B{Workload Type}
-    B -->|Async / High Vol| C[Gemini 3.5 Flash + Flex]
-    B -->|Deterministic Backtest| D[Immutable OSS Llama 3 70B]
+    A[Historical Text Corpus<br/>Earnings, 10-Ks, News] --> B{Workload Type}
+    B -->|Latency-tolerant / High Vol| C[Gemini 3.5 Flash + Flex]
+    B -->|Reproducible Backtest| D[Immutable OSS Llama 3 70B]
     
-    C --> C1[Flex Pricing: 50% Off\nUnlimited Aggr. TPM]
-    D --> D1[Vertex AI Prediction Endpoint\nSpot GPU Pool]
+    C --> C1[Flex service tier: 50% Off<br/>Latency-tolerant, best-effort]
+    D --> D1[Vertex AI Prediction Endpoint<br/>Spot GPU Pool]
     
-    D1 --> D2[min_instances = 0\nScale-to-Zero]
-    D1 --> D3[Spot H100/L4 GPUs\n60%+ Compute Savings]
+    D1 --> D2[minReplicaCount = 0<br/>Scale-to-Zero]
+    D1 --> D3[Spot H100/L4 GPUs<br/>60%+ Compute Savings]
     
     C1 & D2 & D3 --> E[Ultra-low Cost Alpha Extraction]
 ```
 
-### Core Objectives
+**By the end of this workshop, you will have mastered:**
 
-By the end of this workshop, you will have mastered:
-1. **The Asynchronous Cost Cheat Code:** Achieving 100M+ TPM throughput at 50% discount using **Gemini 3.5 Flash** combined with the **Flex billing tier**.
-2. **Locking Your Destiny:** Serving immutable, open-source frontier models (like **Llama 3 70B**) on **Vertex AI Prediction** to guarantee mathematically identical trading signals over multi-year backtesting windows.
-3. **The Scale-to-Zero Hack:** Building high-density autoscaling policies (`min_instances = 0`) on **Spot VMs and Dynamic Workload Scheduling (DWS)** to provision 3,000+ GPU nodes dynamically, crushing workloads at rock-bottom prices, and scaling down to exactly $0.00 when finished.
+1. **The asynchronous cost lever** — cutting cost in half on high-volume, latency-tolerant workloads using **Gemini 3.5 Flash** plus the **Flex service tier**.
+2. **Locking your destiny** — serving immutable, open-source frontier models (like **Llama 3 70B**) on **Vertex AI Prediction** to keep trading-signal generation stable and version-pinned over multi-year backtests.
+3. **The scale-to-zero pattern** — high-density autoscaling (`minReplicaCount = 0`) on **Spot VMs + Dynamic Workload Scheduling (DWS)** to provision thousands of GPU nodes on demand and scale back to exactly $0.00 when finished.
 
-### Target Audience
-- **Quantitative Researchers & Data Scientists** seeking raw compute horsepower for historical data processing.
-- **AI/ML Platform Engineers** tasked with building stable, robust, and cost-effective enterprise AI platforms.
-- **Financial Infrastructure & Cloud Architects** implementing cloud financial operations (FinOps) controls and scale-to-zero workloads.
+**Who this is for:** quantitative researchers and data scientists who need raw compute for historical data processing; AI/ML platform engineers building stable, cost-effective AI platforms; and financial infrastructure / cloud architects implementing FinOps controls and scale-to-zero workloads.
 
-> TIP: A Google Cloud project with billing enabled and appropriate GPU quotas (e.g., L4 or H100 Spot capacity) is required to run the hands-on commands in this workshop.
+> TIP: A Google Cloud project with billing enabled and appropriate GPU quotas (e.g., L4 or H100 Spot capacity) is required to run the hands-on commands.
 
 ---
 
 # Setup
 
-## Project & API Configuration
+## Environment Setup
 duration: 15 min
 id: env-setup
 
-Before diving into the labs, you must configure your Google Cloud workspace, establish terminal access, and enable the required underlying APIs.
+Before the labs, configure your Google Cloud workspace, get terminal access, enable the APIs, and prepare a Python environment and an API key. All six steps below happen in your project and in Cloud Shell.
 
-### 1. Project Selection
-Open the [Google Cloud Console](https://console.cloud.google.com/). Select your billing-enabled workshop project by clicking the project selector at the top. Let's assume your project ID is `quantscale-fsi-lab`.
+**1 · Select your project.** Open the [Google Cloud Console](https://console.cloud.google.com/) and select your billing-enabled project from the selector at the top. We'll assume the project ID is `quantscale-fsi-lab`.
 
-### 2. Launch Cloud Shell
-Click the **Activate Cloud Shell** button at the top-right of the Console toolbar. This provides a free, pre-authenticated, browser-based Linux terminal.
+**2 · Launch Cloud Shell.** Click **Activate Cloud Shell** in the top-right toolbar — a free, pre-authenticated, browser-based Linux terminal.
 
-### 3. Configure the gcloud CLI
-In Cloud Shell, bind your current session to your workshop project:
+**3 · Configure the gcloud CLI.** Bind your session to the project:
 
 ```bash
 gcloud config set project quantscale-fsi-lab
 ```
 
-### 4. Enable Services & APIs
-Enable the fundamental services for Vertex AI, Secret Manager, Compute Engine, and BigQuery. Run the following command in your terminal:
+**4 · Enable services & APIs.** Turn on Vertex AI, Compute Engine, Secret Manager, BigQuery, and Artifact Registry:
 
 ```bash
 gcloud services enable \
@@ -80,213 +70,204 @@ gcloud services enable \
   artifactregistry.googleapis.com
 ```
 
-### 5. Setup Jupyter Python Environment
-To run the python batch scripts, construct a clean virtual environment and install the latest Vertex AI SDK:
+**5 · Set up the Python environment.** Create a clean virtual environment and install the dependencies:
 
 ```bash
 python3 -m venv quant-env
-source quant-env/activate
+source quant-env/bin/activate
 pip install --upgrade pip
-pip install google-genai aiohttp pandas tqdm
+pip install google-genai google-auth aiohttp requests pandas tqdm
 ```
 
-Now you are fully prepared to begin the labs. Let's move to Module 1!
+> WARNING: The activate script lives in `quant-env/bin/activate` (Linux/macOS) or `quant-env\Scripts\activate` (Windows). `source quant-env/activate` does not exist and is a common copy-paste error.
+
+**6 · Get a Gemini API key.** The **Flex service tier** in Module 1 is exposed through the **Gemini Developer API** (`generativelanguage.googleapis.com`), which authenticates with an API key. Create one at [Google AI Studio](https://aistudio.google.com/apikey), then export it:
+
+```bash
+export GEMINI_API_KEY="your-api-key-here"
+```
+
+> NOTE: Modules 2 and 3 use **Vertex AI** with your `gcloud` Application Default Credentials, not this key. The two surfaces are used on purpose — Flex lives on the Gemini Developer API, while dedicated GPU serving lives on Vertex AI.
 
 ---
 
-# Module 1: The Asynchronous Cost Cheat Code
+# Module 1: The Asynchronous Cost Lever
 
-## Module 1: The Flex Concept
-duration: 10 min
+## The Flex Service Tier
+duration: 35 min
 id: flex-concept
 
-Quantitative research pipelines are fundamentally asynchronous. When backtesting a new alpha signal over a 15-year historical corpus of earnings transcripts or SEC 10-Ks, researchers do not require real-time, sub-second responses. They require **aggregated massive throughput** at the **lowest possible cost**.
+Quant research pipelines are fundamentally asynchronous. Backtesting an alpha signal over a 15-year corpus of earnings transcripts or SEC 10-Ks does not need real-time, sub-second responses — it needs **aggregated throughput** at the **lowest cost**.
 
-Standard cloud API endpoints operate on a **Pay-As-You-Go (PGO)** real-time pricing model, enforcing strict rate limits (e.g., 10,000 Transactions Per Minute) to protect server capacity. If a quant pipeline runs hundreds of parallel threads, it will immediately hit HTTP `429 Too Many Requests` errors.
+Standard cloud endpoints use a **pay-as-you-go** real-time pricing model with strict rate limits (e.g., thousands of requests per minute) to protect capacity. A pipeline running hundreds of parallel threads hits HTTP `429 Too Many Requests` almost immediately.
 
-### What is Gemini Flex Pricing?
+**What is the Gemini Flex service tier?** Google introduced the **Flex** inference tier for cost-sensitive, latency-tolerant workloads. You opt in per request by setting `service_tier: "flex"` in the **request body** (not via a header). In exchange for tolerating variable latency, you get:
 
-Google Cloud introduced the **Flex** pricing model specifically for high-volume, non-latency-sensitive workloads. By telling the Gemini gateway that you are willing to let the system queue and optimize your requests asynchronously, you unlock:
+- **50% discount:** roughly half the per-million-token price of the standard real-time tier.
+- **Latency-tolerant scheduling:** Flex requests run on idle / off-peak capacity with a **target turnaround of 1–15 minutes** — fine for backtests that don't need sub-second answers. Google does **not** guarantee that latency.
+- **Best-effort, not unlimited:** Flex is still subject to capacity and your project quotas. When Flex capacity is full a request can return `429`/`503` and will **not** auto-upgrade to Standard — so your client must retry with backoff (the script does exactly that).
 
-- **50% Discount:** You pay exactly half the price per million input and output tokens compared to standard real-time pricing.
-- **Massive TPM Scaling:** Bypasses the strict real-time rate limits, enabling aggregated scaling up to **millions of tokens per second**.
-- **Deterministic Batching:** Behind the scenes, the API leverages idle global compute capacity to fulfill your batches safely and cheaply.
+> NOTE: Flex is a *synchronous, latency-tolerant* tier — your call still blocks until the response arrives, it just may take longer. It is distinct from the separate **Batch API**, which is the right tool for submitting millions of requests as one offline job (also ~50% off). For the small sample dataset here, Flex keeps the code simple.
 
 ```mermaid
 sequenceDiagram
     participant Client as Quant Pipeline (Python)
-    participant GW as Gemini API Gateway
-    participant Flex as Asynchronous Flex Queue
+    participant GW as Gemini Developer API
+    participant Flex as Flex Scheduler (off-peak capacity)
     participant GPU as Google TPU/GPU Accelerators
 
-    Client->>GW: POST /generateContent (with Flex header)
-    Note over Client,GW: Low priority, high volume request
-    GW-->>Client: HTTP 200 OK (Queued & Accepted)
-    GW->>Flex: Route to Async Queue
-    Flex->>GPU: Schedule on Idle/Off-Peak Hardware
-    GPU-->>Flex: Resolve output
-    Flex-->>Client: Push stream/return response
+    Client->>GW: POST :generateContent (service_tier "flex")
+    Note over Client,GW: Cost-sensitive, latency-tolerant request
+    GW->>Flex: Place on cost-optimized, best-effort queue
+    Flex->>GPU: Schedule on idle / off-peak hardware
+    GPU-->>Flex: Completion
+    Flex-->>Client: Response (target 1-15 min, may 429/503 under load)
 ```
 
-In this lab, you will write an asynchronous Python script that reads the sample quarterly earnings transcripts dataset, injects the Flex consumption configuration header, and routes requests at scale.
+Now let's put this into practice and measure exactly what it saves.
 
----
+**Hands-on: the async batch researcher.** We'll process a sample of quarterly earnings transcripts with Gemini 3.5 Flash on the Flex tier.
 
-## Module 1 Hands-on: Coding the Async Batch Researcher
-duration: 20 min
-id: flex-hands-on
+**1 · Download the sample data.** The workshop ships a small mock dataset of earnings-call transcripts. Pull it into your Cloud Shell working directory:
 
-In this hands-on lab, we will process the mock quarterly earnings transcripts dataset located at `public/data/earnings_transcripts.jsonl` using Gemini 3.5 Flash in a highly concurrent asynchronous pipeline.
+```bash
+curl -O https://raw.githubusercontent.com/dambor/workshop-platform/main/public/data/earnings_transcripts.jsonl
+head -c 300 earnings_transcripts.jsonl
+```
 
-### Step 1: Read the Sample Data
-Let's first verify the presence of the sample data. In your Python script, we will load `earnings_transcripts.jsonl` and inspect the structures.
+Each line is a JSON object with `symbol`, `company`, `quarter`, `publish_date`, and `transcript` fields.
 
-### Step 2: Write the Python Async Client
-Create a new file called `flex_batch_research.py` in your Cloud Shell environment. Copy and paste the following code:
+**2 · Write the async client.** Create `flex_batch_research.py`. It calls the Gemini Developer API, sets `service_tier: "flex"` in the body, and retries with exponential backoff (since Flex is best-effort):
 
 ```python small
 # flex_batch_research.py
 import asyncio
 import json
+import os
 import time
 import aiohttp
-from google.auth import default
-from google.auth.transport.requests import Request
 
-# Load mock earnings transcripts
-def load_transcripts():
-    transcripts = []
-    with open('public/data/earnings_transcripts.jsonl', 'r') as f:
-        for line in f:
-            transcripts.append(json.loads(line))
-    return transcripts
+API_KEY = os.environ["GEMINI_API_KEY"]  # from `export GEMINI_API_KEY=...`
+MODEL = "gemini-3.5-flash"
+URL = f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL}:generateContent"
 
-# Helper to get active GCP auth token
-def get_auth_token():
-    credentials, project = default()
-    auth_request = Request()
-    credentials.refresh(auth_request)
-    return credentials.token
+def load_transcripts(path="earnings_transcripts.jsonl"):
+    with open(path, "r") as f:
+        return [json.loads(line) for line in f]
 
-async def analyze_transcript(session, token, project_id, transcript_data):
-    symbol = transcript_data['symbol']
-    company = transcript_data['company']
-    quarter = transcript_data['quarter']
-    text = transcript_data['transcript']
-    
-    url = f"https://us-central1-aiplatform.googleapis.com/v1/projects/{project_id}/locations/us-central1/publishers/google/models/gemini-3.5-flash:generateContent"
-    
-    # Critical Flex Configuration
-    # The 'X-Goog-In-Billing-Tier: FLEX' header informs the Gemini API Gateway 
-    # that this is an asynchronous batch request, qualifying it for 50% price reduction
-    # and massive throughput allowance.
+async def analyze_transcript(session, transcript_data):
+    symbol = transcript_data["symbol"]
+    company = transcript_data["company"]
+    quarter = transcript_data["quarter"]
+    text = transcript_data["transcript"]
+
     headers = {
-        "Authorization": f"Bearer {token}",
         "Content-Type": "application/json",
-        "X-Goog-In-Billing-Tier": "FLEX"
+        "x-goog-api-key": API_KEY,
     }
-    
+
     payload = {
+        # The Flex service tier (~50% cheaper, latency-tolerant, best-effort) is a
+        # request-BODY parameter -- not an HTTP header.
+        "service_tier": "flex",
         "contents": [{
             "parts": [{
-                "text": f"You are an expert quantitative research analyst. Analyze this earnings transcript for {company} ({symbol}) for {quarter}. Extract key financial metrics (revenue, gross margin) and perform sentiment analysis. Return a clean JSON block containing symbol, sentiment_score (-1.0 to 1.0), and top_3_key_metrics.\n\nTranscript:\n{text}"
+                "text": (
+                    f"You are an expert quantitative research analyst. Analyze this "
+                    f"earnings transcript for {company} ({symbol}) for {quarter}. "
+                    f"Extract key financial metrics (revenue, gross margin) and perform "
+                    f"sentiment analysis. Return a clean JSON object with keys: symbol, "
+                    f"sentiment_score (-1.0 to 1.0), and top_3_key_metrics.\n\n"
+                    f"Transcript:\n{text}"
+                )
             }]
         }],
-        "generationConfig": {
-            "responseMimeType": "application/json"
-        }
+        "generationConfig": {"responseMimeType": "application/json"},
     }
-    
+
     start_time = time.time()
-    try:
-        async with session.post(url, json=payload, headers=headers) as response:
-            if response.status == 200:
-                result = await response.json()
-                text_response = result['candidates'][0]['content']['parts'][0]['text']
-                latency = time.time() - start_time
-                print(f"[{symbol} | {quarter}] Completed in {latency:.2f}s")
-                return json.loads(text_response)
-            else:
-                error_body = await response.text()
-                print(f"Error {response.status} for {symbol}: {error_body}")
+    # Flex is best-effort: on 429/503, back off and retry instead of giving up.
+    for attempt in range(5):
+        try:
+            async with session.post(URL, json=payload, headers=headers) as response:
+                if response.status == 200:
+                    result = await response.json()
+                    text_response = result["candidates"][0]["content"]["parts"][0]["text"]
+                    served = response.headers.get("x-gemini-service-tier", "unknown")
+                    print(f"[{symbol} | {quarter}] tier={served} done in {time.time()-start_time:.2f}s")
+                    return json.loads(text_response)
+                if response.status in (429, 503):
+                    await asyncio.sleep(2 ** attempt)  # exponential backoff
+                    continue
+                print(f"Error {response.status} for {symbol}: {await response.text()}")
                 return None
-    except Exception as e:
-        print(f"Exception for {symbol}: {e}")
-        return None
+        except Exception as e:
+            print(f"Exception for {symbol}: {e}")
+            await asyncio.sleep(2 ** attempt)
+    print(f"Gave up on {symbol} after retries.")
+    return None
 
 async def main():
-    project_id = "quantscale-fsi-lab" # Replace with your actual project ID
-    token = get_auth_token()
     transcripts = load_transcripts()
-    
     print(f"Loaded {len(transcripts)} transcripts for batch processing.")
-    print("Initiating Flex-optimized pipeline...")
-    
+    print("Initiating Flex-tier pipeline...")
+
     start_wall_time = time.time()
     async with aiohttp.ClientSession() as session:
-        tasks = [analyze_transcript(session, token, project_id, t) for t in transcripts]
+        tasks = [analyze_transcript(session, t) for t in transcripts]
         results = await asyncio.gather(*tasks)
-        
-    end_wall_time = time.time()
+
     print("\n--- Summary Results ---")
     print(json.dumps([r for r in results if r is not None], indent=2))
-    print(f"\nBatch processing finished in {end_wall_time - start_wall_time:.2f} seconds.")
+    print(f"\nBatch processing finished in {time.time() - start_wall_time:.2f} seconds.")
 
 if __name__ == "__main__":
     asyncio.run(main())
 ```
 
-### Step 3: Run the script
-Run the script inside your terminal:
+**3 · Run it.**
 
 ```bash
 python flex_batch_research.py
 ```
 
-Observe how all corporate transcripts are sent concurrently. Each request processed returns clean JSON with key metrics and sentiment scores extracted directly from the files.
+All transcripts are sent concurrently and each returns clean JSON with key metrics and a sentiment score. The `x-gemini-service-tier` response header confirms which tier actually served each request. Because the sample set is tiny you'll get fast responses, but on a real backtest some Flex requests may sit in the 1–15 minute window — that's the trade-off you accept for the 50% discount.
 
----
+**The payoff: real-time vs. Flex.** By setting that single request-body parameter, you cut the per-token cost of large, latency-tolerant jobs in half:
 
-## Module 1 Reveal: Bypassing TPM Limits & 50% Cost Savings
-duration: 10 min
-id: flex-reveal
-
-By adding a single, simple configuration header—`X-Goog-In-Billing-Tier: FLEX`—to the HTTP requests, you have unlocked the ultimate cost cheat code for FSI Batch research. Let's look at the financial math and performance differences:
-
-### Real-Time vs. Flex Tier Comparison
-
-| Metric | Standard Pay-As-You-Go (PGO) | Gemini Flex Billing |
+| Metric | Standard (real-time) | Gemini Flex |
 |---|---|---|
-| **Input Tokens (per 1M)** | $0.075 | **$0.0375** *(50% Savings)* |
-| **Output Tokens (per 1M)** | $0.30 | **$0.150** *(50% Savings)* |
-| **Aggregated TPM Limit** | 100K - 1M TPM (Strict Throttling) | **100M+ TPM** (Unlimited Queued Scale) |
-| **Rate Limit Action** | HTTP `429 Too Many Requests` | **Automated queueing** and smooth execution |
-| **Optimal Use Case** | Real-time chat, low-latency UI | Backtesting, sentiment extraction, classification |
+| **Input Tokens (per 1M)** | $0.075 | **$0.0375** *(≈50% savings)* |
+| **Output Tokens (per 1M)** | $0.30 | **$0.150** *(≈50% savings)* |
+| **Target latency** | Real-time (sub-second) | **Latency-tolerant** (1–15 min target, best-effort) |
+| **Under load** | Strict RPM/TPM; `429` on burst | May return `429`/`503`; **client retries with backoff** |
+| **Optimal use case** | Real-time chat, low-latency UI | Backtesting, sentiment extraction, classification |
 
-### How this impacts FinOps
-For a typical quantitative fund processing **50 billion tokens** of historical SEC filings, earnings transcripts, and alternative datasets per month:
-- **Standard PGO Cost:** $3,750 (Input) + $15,000 (Output) = **$18,750**
-- **Flex Billing Cost:** $1,875 (Input) + $7,500 (Output) = **$9,375**
-- **Direct Monthly Savings:** **$9,375** per month (Exactly $112,500/year saved on a single pipeline), with **zero** architecture rewrites.
+*Token prices above are illustrative — confirm current Gemini 3.5 Flash rates in the [pricing docs](https://ai.google.dev/gemini-api/docs/pricing).*
 
-More importantly, your engineering team no longer needs to write complex client-side exponential backoff or throttling retry queues. The platform handles the queueing for you, keeping the pipeline simple and bulletproof.
+**What it means for FinOps.** For a fund processing **50 billion input + 50 billion output tokens** of historical filings, transcripts, and alternative datasets per month:
+
+- **Standard cost:** $3,750 (input) + $15,000 (output) = **$18,750**
+- **Flex cost:** $1,875 (input) + $7,500 (output) = **$9,375**
+- **Direct monthly savings:** **$9,375** (≈$112,500/year on a single pipeline), with **zero** architecture rewrites.
+
+The discount isn't free of engineering — because Flex is best-effort, you keep simple retry-with-backoff (as above). What you avoid is *premium real-time pricing* for work that genuinely tolerates minutes of latency. For jobs in the millions of documents, reach for the **Batch API**, which is built for that scale at a similar discount.
 
 ---
 
-# Module 2: Locking Your Destiny — Serving Immutable OSS Models
+# Module 2: Reproducible Backtesting on Immutable Models
 
-## Module 2: The Backtesting Math Consistency Problem
-duration: 10 min
+## Immutable Serving for Reproducible Backtests
+duration: 35 min
 id: model-drift-intro
 
-While SaaS LLM APIs (like Gemini, GPT, or Claude) are highly performant and easily accessible, they present a significant hazard for backtesting financial trading signals: **Model Drift**.
+SaaS LLM APIs (Gemini, GPT, Claude) are performant and convenient, but they pose a hazard for backtesting trading signals: **model drift**.
 
-### What is Model Drift?
+**What is model drift?** Proprietary models are constantly updated, patched, and fine-tuned behind the scenes. When a provider ships a minor patch:
 
-Proprietary models are constantly updated, patched, and fine-tuned behind the scenes to improve general performance or security safety filters. When a cloud provider releases a minor patch:
-- The **safety filters** might become more sensitive, refusing to analyze a highly volatile transcript that mentions "bankruptcy risk" or "insider trading allegations."
-- The **weights** shift slightly, changing the mathematical probability distribution of output tokens.
-- The **internal tokenizer** might be optimized, changing how text is segmented into numbers.
+- **Safety filters** may tighten, refusing to analyze a transcript that mentions "bankruptcy risk" or "insider trading allegations."
+- **Weights** shift slightly, changing the probability distribution of output tokens.
+- **The tokenizer** may be optimized, changing how text is segmented.
 
 ```mermaid
 graph TD
@@ -294,53 +275,42 @@ graph TD
     B -->|Proprietary API Jan 2026| C[Trading Signal Alpha = +4.2%]
     
     A --> D[Live Trading Pipeline]
-    D -->|Proprietary API Jun 2026\nModel Deprecates/Updates| E[Trading Signal Alpha = -1.8%]
+    D -->|Proprietary API Jun 2026<br/>Model Deprecates/Updates| E[Trading Signal Alpha = -1.8%]
     
-    C -->|Drift/Variance| F[System Failure: Model Drift breaks math consistency!]
+    C -->|Drift/Variance| F[System Failure: Model Drift breaks consistency!]
 ```
 
-> WARNING: A trading model that works perfectly during a 10-year historical backtest can completely fail in live execution simply because the underlying proprietary API changed its behavior. In quant finance, backtesting math must remain perfectly reproducible.
+> WARNING: A model that backtests perfectly over 10 years can fail in live execution simply because the underlying proprietary API changed behavior. In quant finance, the backtest must remain reproducible.
 
-### The Solution: Vertex AI Model Garden
-By deploying open-source frontier models (such as **Llama 3 70B**) directly to a **Vertex AI Dedicated Prediction Endpoint**, you completely control the environment:
-- **Immutable Weights:** The raw model weights (`.safetensors` or GGUF files) live inside your own Cloud Storage buckets. They can never change.
-- **Frozen Tokenizer:** The vocabulary mapping is static and remains identical for years.
-- **No Safety Updates:** Safety configurations are explicitly authored by your team and remain entirely unchanged unless you redeploy them.
+**The solution: Vertex AI Model Garden.** Deploying an open-source frontier model (such as **Llama 3 70B**) to your own **Vertex AI dedicated prediction endpoint** puts you in control:
 
-This ensures that a trading signal generated today will yield the **exact same math** when evaluated three years from now.
+- **Immutable weights:** the raw weights (`.safetensors`) live in your own Cloud Storage bucket and never change underneath you.
+- **Frozen tokenizer:** the vocabulary mapping stays identical for years.
+- **No surprise safety updates:** safety config is authored by your team and changes only when you redeploy.
 
----
+The result: a backtest run today and the same backtest run in three years are evaluating the **same model**, not a silently-updated endpoint. Let's build and probe that.
 
-## Module 2 Hands-on: Deploying Llama 3 on Vertex AI
-duration: 25 min
-id: model-garden-hands-on
+**Hands-on: deploy Llama 3 and verify reproducibility.** We'll deploy Llama 3 70B from Model Garden, pin its weights, then probe its logprobs to see exactly what "reproducible" does — and doesn't — mean.
 
-In this lab, we will navigate **Vertex AI Model Garden**, select **Llama 3 70B Instruct**, and configure a dedicated Vertex AI Prediction Endpoint with weight locking.
+**1 · Access Model Garden.** In the Console, open **Vertex AI → Model Garden**, search `Llama 3`, and select the **Llama 3 70B Instruct (vLLM)** card.
 
-### Step 1: Access Model Garden
-1. In the Google Cloud Console, navigate to **Vertex AI** via the left-side navigation panel.
-2. Click on **Model Garden** from the dashboard.
-3. In the search bar, type `Llama 3` and select the **Llama 3 70B Instruct (vLLM)** card.
+**2 · Deploy the endpoint.** Click **Deploy** and configure:
 
-### Step 2: Deploy the Endpoint
-1. On the Llama 3 page, click the **Deploy** button.
-2. Configure the deployment parameters:
-   - **Endpoint Name:** `quant-llama3-70b-immutable`
-   - **Region:** `us-central1`
-   - **Machine Type:** `a2-highgpu-8g` (containing 8x Nvidia A100 40GB GPUs for inference acceleration).
-   - **Framework:** `vLLM` (highly optimized container for high-throughput concurrency).
+- **Endpoint name:** `quant-llama3-70b-immutable`
+- **Region:** `us-central1`
+- **Machine type:** `a2-highgpu-8g` (8x Nvidia A100 40GB)
+- **Framework:** `vLLM` (optimized container for high-throughput concurrency)
 
-### Step 3: Configure Weight Locking
-To guarantee that weights are immutable, we configure the deployment container to pull directly from our private Cloud Storage bucket rather than pulling dynamically from public hubs (like Hugging Face) which are prone to changes.
+Clicking **Deploy** uploads the model, creates the endpoint, and deploys it onto the machine — after a few minutes you have a live endpoint with its own numeric **Endpoint ID**.
 
-Here is the declarative Vertex AI deployment configuration file (`llama_deploy.yaml`) representing this step:
+> NOTE: A full Llama 3 70B deployment on 8x A100 takes ~15–30 minutes to become ready and incurs real GPU cost while running. To just follow along, read through the rest of this lab without deploying, then undeploy from the endpoint page when finished.
+
+**3 · What "weight locking" means.** The console Deploy is the real deployment. For immutability you add one step: instead of letting the container pull weights from a public hub (like Hugging Face) — which can change — you stage the exact `.safetensors` in **your own Cloud Storage bucket** and register them as a Vertex AI **Model**. The deployed configuration then looks like this (illustrative — it's the resource the Deploy button produces, not a file you apply):
 
 ```yaml
-# llama_deploy.yaml
-endpoint:
-  displayName: "quant-llama3-70b-immutable"
-  region: "us-central1"
+# Representative DeployedModel (not a runnable file)
 deployedModel:
+  # A Model uploaded from YOUR bucket -> weights can never change underneath you.
   model: "projects/quantscale-fsi-lab/locations/us-central1/models/llama3-70b-instruct"
   dedicatedResources:
     machineSpec:
@@ -350,59 +320,66 @@ deployedModel:
     minReplicaCount: 1
     maxReplicaCount: 5
   containerSpec:
-    imageUri: "us-docker.pkg.dev/vertex-ai/vertex-vision-model-garden-dockers/pytorch-vllm-serve:2024-v1"
+    imageUri: "us-docker.pkg.dev/vertex-ai/vertex-vision-model-garden-dockers/pytorch-vllm-serve:latest"
+    # Weights are mounted from the Model's artifact URI; no live download from a public hub.
     env:
       - name: "MODEL_ID"
-        value: "meta-llama/Meta-Llama-3-70B-Instruct"
-      - name: "HF_TOKEN"
-        value: "projects/quantscale-fsi-lab/secrets/huggingface-token/versions/latest"
+        value: "/gcs/quantscale-model-weights/llama3-70b-instruct"
 ```
 
-### Step 4: Run the Deployment CLI
-In your Cloud Shell terminal, trigger the deployment utilizing the `gcloud` command line tool:
+**4 · The equivalent CLI flow (optional).** To reproduce the console Deploy programmatically — and make the "weights from my bucket" step explicit — run these three commands; each prints an ID the next one consumes:
 
 ```bash
-# Upload and Deploy using the YAML spec
-gcloud ai endpoints create \
-  --project=quantscale-fsi-lab \
+# 1. Register the immutable weights staged in YOUR bucket as a Vertex AI Model
+gcloud ai models upload \
   --region=us-central1 \
-  --display-name="quant-llama3-70b-immutable"
+  --display-name=llama3-70b-instruct \
+  --container-image-uri=us-docker.pkg.dev/vertex-ai/vertex-vision-model-garden-dockers/pytorch-vllm-serve:latest \
+  --artifact-uri=gs://quantscale-model-weights/llama3-70b-instruct/
+
+# 2. Create the (empty) endpoint
+gcloud ai endpoints create \
+  --region=us-central1 \
+  --display-name=quant-llama3-70b-immutable
+
+# 3. Deploy the model onto the endpoint (use the IDs returned above)
+gcloud ai endpoints deploy-model ENDPOINT_ID \
+  --region=us-central1 \
+  --model=MODEL_ID \
+  --display-name=llama3-70b-deployment \
+  --machine-type=a2-highgpu-8g \
+  --accelerator=type=nvidia-tesla-a100,count=8 \
+  --min-replica-count=1 --max-replica-count=5
 ```
 
-Once deployed, Vertex AI returns a unique Endpoint ID. We are now ready to verify the determinism of the math output.
-
----
-
-## Module 2 Reveal: Weight-Locking & Deterministic Research
-duration: 10 min
-id: model-garden-reveal
-
-With your own dedicated Model Garden endpoint running Llama 3 70B, you have solved the backtesting consistency problem. Let's look at what this guarantees:
-
-### Math Consistency Guarantee
-
-Let's test our endpoint with a specific research query. In quantitative backtesting, we look at the probability weights of output tokens (the **logits**). If we send an identical prompt to Llama 3 twice, we get mathematically identical logits:
+**5 · Verify reproducibility.** In backtesting we care about the probability weights of output tokens (the **logprobs**). With greedy decoding (`temperature = 0.0`) and a pinned model, the *selected token* is stable and the logprobs are reproducible within tight tolerances:
 
 ```python small
 # test_logits_determinism.py
-import requests
 import json
+import requests
+import google.auth
+import google.auth.transport.requests
 
-ENDPOINT_ID = "1234567890" # Replace with your deployed Vertex Endpoint ID
+ENDPOINT_ID = "1234567890"  # Replace with your deployed Vertex Endpoint ID
 PROJECT_ID = "quantscale-fsi-lab"
 URL = f"https://us-central1-aiplatform.googleapis.com/v1/projects/{PROJECT_ID}/locations/us-central1/endpoints/{ENDPOINT_ID}:predict"
+
+# Get a short-lived access token from your Application Default Credentials.
+creds, _ = google.auth.default()
+creds.refresh(google.auth.transport.requests.Request())
 
 payload = {
     "instances": [{
         "prompt": "Evaluate market impact: The Fed announces a 50bps rate cut in response to cooling labor metrics. Sentiment score is: ",
         "max_tokens": 1,
-        "temperature": 0.0, # Forces deterministic greedy decoding
-        "logprobs": 5 # Request top 5 alternative token log probabilities
+        "temperature": 0.0,  # Greedy decoding: always pick the top token
+        "logprobs": 5        # Return the top-5 token log probabilities
     }]
 }
 
 headers = {
-    "Authorization": "Bearer YOUR_ACCESS_TOKEN",
+    "Authorization": f"Bearer {creds.token}",
     "Content-Type": "application/json"
 }
 
@@ -410,127 +387,101 @@ response = requests.post(URL, json=payload, headers=headers)
 print(json.dumps(response.json(), indent=2))
 ```
 
-### Logprobs Math Verification
-The response returns exact log probability maps:
-- `Token "positive"` -> log probability: `-0.023415`
-- `Token "neutral"` -> log probability: `-4.120562`
-- `Token "bullish"` -> log probability: `-5.981034`
+A run returns log-probability maps such as `positive -> -0.0234`, `neutral -> -4.1206`, `bullish -> -5.9810`.
 
-Because the model weights are **frozen**, the machine type is **fixed**, and the temperature is set to **0.0**, these log probability values will remain identical to the sixth decimal place every time you execute this backtest, whether it is run today, next month, or three years from now. 
+> WARNING: Do not expect *bit-identical* logprobs on every call. With `temperature = 0.0` the **selected token** is deterministic, but exact logprob values can vary in the last few decimals run-to-run because GPU floating-point reductions and vLLM's continuous batching are not bit-deterministic (the result depends on what else is in the batch, the parallelism layout, and driver/kernel versions). Fix the seed, cap batch behavior, and compare logprobs with a tolerance — not for exact equality.
 
-### Key Takeaways for Quants
+What pinning the model **does** guarantee is the elimination of *model-version drift*: weights, tokenizer, and safety config are frozen in your own deployment, so a backtest today and the same backtest in three years run on the same model. That's the reproducibility property that actually breaks quant backtests on a proprietary API.
 
-- **Auditability:** Compliance and audit teams can verify exactly how historical signals were calculated.
-- **Reproducibility:** A trading algorithm can be safely backtested against 10 years of data with absolute certainty that no API model shift will degrade live execution performance.
-- **Independence:** Your quantitative team is completely insulated from proprietary SaaS model deprecations and sudden API policy shifts.
+**Key takeaways for quants:**
+
+- **Auditability:** compliance can pin exactly which model version (weights + tokenizer + config) produced each historical signal.
+- **Reproducibility:** an algorithm can be backtested over 10 years knowing no *model-version* shift will silently change behavior between backtest and live.
+- **Independence:** your team is insulated from SaaS model deprecations and sudden API policy shifts.
 
 ---
 
-# Module 3: The Hack — Autoscaling 3,000 Spot GPU Nodes
+# Module 3: Scale-to-Zero Spot GPU Autoscaling
 
-## Module 3: Scale-to-Zero and FinOps Architecture
-duration: 10 min
-id: autoscaling-spot-intro
+## Spot Autoscaling with Scale-to-Zero
+duration: 35 min
+id: autoscaling-intro
 
-While dedicated prediction endpoints guarantee math consistency, running multiple high-density GPU nodes (like A100 or H100 arrays) gets extremely expensive very quickly. 
+Dedicated prediction endpoints give you reproducibility, but running high-density GPU nodes (A100 or H100 arrays) gets expensive fast.
 
-### The Cost Challenge
-An 8x A100 machine instance costs roughly **$29.00 per hour** under standard on-demand pricing. 
-- Running it continuously for 1 month costs **$20,880**.
-- If researchers only run backtests between 9:00 AM and 5:00 PM on weekdays, the system sits completely **idle 76% of the time**.
-- During the night or weekends, your firm is burning **$15,800 a month** on empty compute power.
+**The cost challenge.** An 8x A100 instance costs roughly **$29.00 per hour** on-demand:
+
+- Running it continuously for a month costs **$20,880**.
+- If researchers only run backtests 9–5 on weekdays, the system is **idle ~76% of the time**.
+- Nights and weekends burn roughly **$15,800 a month** on empty compute.
 
 ```mermaid
 graph TD
     subgraph On-Demand Cost
         direction TB
-        OD[On-Demand GPUs\nAlways On] --> OD_Cost["$20,880 / month\n76% Idle Spend"]
+        OD[On-Demand GPUs<br/>Always On] --> OD_Cost["$20,880 / month<br/>76% Idle Spend"]
     end
     
     subgraph Spot Scale-to-Zero Cost
         direction TB
-        SZ[Spot GPUs + min_instances=0\nAutoscale down when idle] --> SZ_Cost["$2,500 / month\n$0.00 Idle Spend"]
+        SZ[Spot GPUs + minReplicaCount=0<br/>Autoscale down when idle] --> SZ_Cost["$2,500 / month<br/>$0.00 Idle Spend"]
     end
     
     OD_Cost -.->|88% Cost Reduction| SZ_Cost
 ```
 
-### The Hack: Spot VMs + Scale-to-Zero (min_instances = 0)
-To solve this cost sink, we configure a highly aggressive, high-density autoscaling architecture leveraging:
+**The pattern: Spot VMs + scale-to-zero.** Two independent levers tackle this cost sink:
 
-1. **Scale-to-Zero (`min_instances = 0`):** When researchers are sleeping, Vertex AI automatically spins down all instances, reducing running compute costs to exactly **$0.00**.
-2. **Spot VMs & Dynamic Workload Scheduling (DWS):** Spot VMs utilize excess Google Cloud compute capacity at up to a **60-91% discount** compared to on-demand pricing.
-3. **Automated LLM Gateway:** An internal, lightweight proxy handles the queueing and routing. If a Spot instance is preempted, the gateway safely routes the request to an alternative zone or schedules it for immediate recovery, completely shielding researchers from interruptions.
+1. **Scale-to-zero (`minReplicaCount = 0`):** when no requests arrive, Vertex AI spins every replica down, dropping running compute cost to exactly **$0.00**.
+2. **Spot VMs & Dynamic Workload Scheduling (DWS):** Spot uses excess Compute Engine capacity at a steep discount (often 60–91% off on-demand), with the caveat that replicas can be preempted.
 
-Let's configure this autoscaling policy on Spot GPUs.
+A thin gateway in front handles queueing and client-side retries, so preemptions and cold starts don't fail the batch. Let's configure it.
 
----
+**Hands-on: Spot autoscaling at scale.** We'll attach a Spot + scale-to-zero policy to the endpoint, then fire a concurrent batch at it to watch it scale up from zero and back down.
 
-## Module 3 Hands-on: Configuring Spot Autoscaling
-duration: 20 min
-id: autoscaling-spot-hands-on
-
-In this hands-on lab, we will configure an aggressive Spot VM-based autoscaling policy for our Vertex AI Prediction Endpoint, enabling it to scale from 0 up to 2,000+ instances dynamically using Google's modern GPU types (such as **Nvidia L4** or **H100**).
-
-### Step 1: Construct the Spot Autoscaling Configuration
-Create a file called `spot_autoscale_policy.json` representing your target deployment state. This policy defines `minReplicaCount = 0` and targets Spot compute capacity:
+**1 · Construct the Spot policy.** Create `spot_autoscale_policy.json`. Both Spot (`"spot": true`) and scale-to-zero (`"minReplicaCount": 0`) live **inside** `dedicatedResources`:
 
 ```json
 {
   "deployedModel": {
     "model": "projects/quantscale-fsi-lab/locations/us-central1/models/llama3-70b-instruct",
+    "displayName": "llama3-spot-cluster",
     "dedicatedResources": {
       "machineSpec": {
         "machineType": "g2-standard-96",
         "acceleratorType": "NVIDIA_L4",
         "acceleratorCount": 8
       },
+      "spot": true,
       "minReplicaCount": 0,
-      "maxReplicaCount": 2000
-    },
-    "spotScalingConfig": {
-      "enableSpot": true,
-      "preemptionAction": "RECREATE"
-    },
-    "automaticResources": {
       "maxReplicaCount": 2000
     }
   }
 }
 ```
 
-### Why we target Nvidia L4 and Spot VMs
-- **Nvidia L4 GPUs:** Extremely cost-efficient, low-power accelerators built on the Ada Lovelace architecture, perfect for batch inference processing at scale.
-- **Spot Capacity (`enableSpot: true`):** Changes the billing model to utilize excess G4/L4/H100 GPU pools. If a GPU pool experiences high demand, Google Cloud can preempt our instances with a 30-second warning; Vertex AI will automatically capture this warning and recreate the instance on alternative available hardware (`preemptionAction: "RECREATE"`).
+- **Nvidia L4 GPUs:** cost-efficient, low-power Ada Lovelace accelerators, well-suited to batch inference at scale.
+- **Spot capacity (`"spot": true`):** bills against excess Compute Engine capacity at a steep discount. Google Cloud can preempt a Spot replica with a ~30-second warning; Vertex AI then recreates it on available capacity. Build for preemption — keep work idempotent and retry on the client.
 
-### Step 2: Deploy the Spot Autoscaling Endpoint
-Trigger the creation of this elastic Spot endpoint in your project:
+> WARNING: A `maxReplicaCount` in the thousands requires correspondingly large GPU quota that you must request in advance. Treat `2000` here as the ceiling of an aspirational policy, not something that provisions on day one.
+
+**2 · Deploy the scale-to-zero endpoint.** Scale-to-zero is served by the **v1beta1** Prediction API, so POST the config to the beta `:deployModel` endpoint. Capture your numeric **Endpoint ID** (from Module 2), then:
 
 ```bash
-gcloud ai endpoints deploy-model quant-llama3-70b-immutable \
-  --project=quantscale-fsi-lab \
-  --region=us-central1 \
-  --model=projects/quantscale-fsi-lab/locations/us-central1/models/llama3-70b-instruct \
-  --display-name="llama3-spot-cluster" \
-  --machine-type="g2-standard-96" \
-  --accelerator-type="NVIDIA_L4" \
-  --accelerator-count=8 \
-  --min-replica-count=0 \
-  --max-replica-count=2000 \
-  --spot
+ENDPOINT_ID="<your-numeric-endpoint-id>"
+
+curl -X POST \
+  -H "Authorization: Bearer $(gcloud auth print-access-token)" \
+  -H "Content-Type: application/json" \
+  "https://us-central1-aiplatform.googleapis.com/v1beta1/projects/quantscale-fsi-lab/locations/us-central1/endpoints/${ENDPOINT_ID}:deployModel" \
+  -d @spot_autoscale_policy.json
 ```
 
-The system will initialize the endpoint state. Because `min-replica-count` is set to `0`, no actual VM instances are created immediately, and your running hourly cost is exactly **$0.00**.
+> NOTE: The `gcloud` equivalent is `gcloud beta ai endpoints deploy-model ${ENDPOINT_ID} ...` — the `beta` track is required because scale-to-zero is a v1beta1 feature. The REST call above maps 1:1 to the JSON you just wrote, which is why we use it here.
 
----
+Because `minReplicaCount` is `0`, no VM instances run until traffic arrives — so your idle hourly cost is exactly **$0.00**.
 
-## Module 3 Hands-on: Simulating the Massive Batch Workload
-duration: 20 min
-id: autoscaling-workload-simulation
-
-Now, we will simulate a massive research batch job running through an internal **LLM Corporate Gateway**. 
-
-The gateway is programmed to split a 1,000,000-document transcript corpus into parallel batches and stream requests directly to our newly created Spot prediction endpoint.
+**3 · Simulate the batch workload.** Now fire a concurrent batch through a gateway to force the endpoint to autoscale from zero:
 
 ```mermaid
 sequenceDiagram
@@ -539,21 +490,20 @@ sequenceDiagram
     participant AS as Autoscale Manager
     participant Spot as Spot GPU Pools (L4/H100)
 
-    Note over GW,Spot: Endpoint is idle (min_instances = 0)
-    GW->>EP: Send 50,000 concurrent transcript requests
+    Note over GW,Spot: Endpoint is idle (minReplicaCount = 0)
+    GW->>EP: Send concurrent transcript requests
     EP->>AS: High traffic alert! Trigger scale up
-    AS->>Spot: Provision 500 Spot GPU Nodes
+    AS->>Spot: Provision Spot GPU nodes
     Note over Spot: GPUs spin up in parallel
     Spot-->>EP: Active & Ready
-    EP-->>GW: Complete batch in parallel (60% discount)
+    EP-->>GW: Complete batch in parallel (Spot discount)
     Note over GW,Spot: Workload finished. Idle for 15 mins
     AS->>Spot: Trigger Scale-to-Zero
     Spot-->>EP: Deprovision all instances
     Note over EP: Running Cost = $0.00
 ```
 
-### The Gateway Python Simulator
-Create a file called `llm_gateway_simulator.py` which triggers concurrent requests to force our Spot endpoint to autoscale:
+Create `llm_gateway_simulator.py`:
 
 ```python small
 # llm_gateway_simulator.py
@@ -562,83 +512,77 @@ import json
 import random
 import time
 import aiohttp
+import google.auth
+import google.auth.transport.requests
 
 async def send_gateway_request(session, endpoint_url, token, doc_id):
     headers = {
         "Authorization": f"Bearer {token}",
         "Content-Type": "application/json"
     }
-    
+
     # Mock financial text chunk
     payload = {
         "instances": [{
             "prompt": f"Extract corporate sentiment for Document ID {doc_id}: {random.choice(['Profits rose 15% but supply chain costs expanded.', 'Macro headwinds forced workforce reductions.', 'Strong cloud adoption offset legacy product deceleration.'])}"
         }]
     }
-    
+
     try:
         async with session.post(endpoint_url, json=payload, headers=headers) as r:
-            status = r.status
-            return status
+            return r.status
     except Exception as e:
         return f"Exception: {e}"
 
+NUM_REQUESTS = 2000
+ENDPOINT_ID = "<your-numeric-endpoint-id>"  # the Spot endpoint created in Step 2
+
 async def main():
-    token = "MOCK_GATEWAY_TOKEN"
-    endpoint_url = "https://us-central1-aiplatform.googleapis.com/v1/projects/quantscale-fsi-lab/locations/us-central1/endpoints/quant-llama3-70b-immutable:predict"
-    
-    print("Initiating massive batch simulation: sending 20,000 concurrent research documents...")
+    # Real short-lived token from your Application Default Credentials.
+    creds, _ = google.auth.default()
+    creds.refresh(google.auth.transport.requests.Request())
+    endpoint_url = (
+        "https://us-central1-aiplatform.googleapis.com/v1/projects/"
+        f"quantscale-fsi-lab/locations/us-central1/endpoints/{ENDPOINT_ID}:predict"
+    )
+
+    print(f"Initiating batch simulation: sending {NUM_REQUESTS:,} concurrent research documents...")
     start_time = time.time()
-    
+
     async with aiohttp.ClientSession() as session:
-        # Simulate high-density concurrency
-        tasks = [send_gateway_request(session, endpoint_url, token, i) for i in range(2000)]
+        tasks = [send_gateway_request(session, endpoint_url, creds.token, i) for i in range(NUM_REQUESTS)]
         statuses = await asyncio.gather(*tasks)
-        
+
     duration = time.time() - start_time
-    print(f"Sent 2,000 requests in {duration:.2f} seconds.")
-    print(f"Gateway Response Distribution: Success: {statuses.count(200)}, Queued/Retried: {len(statuses) - statuses.count(200)}")
+    ok = statuses.count(200)
+    print(f"Sent {NUM_REQUESTS:,} requests in {duration:.2f} seconds.")
+    print(f"Response distribution -> 200 OK: {ok}, other/retryable: {len(statuses) - ok}")
 
 if __name__ == "__main__":
     asyncio.run(main())
 ```
 
-Execute the simulator in your Cloud Shell terminal:
+Run it:
 
 ```bash
 python llm_gateway_simulator.py
 ```
 
----
+> NOTE: Because the endpoint scaled to zero, the first burst triggers a **cold start** while Spot replicas are provisioned. Expect some early `429`/`503` responses until capacity comes online — exactly why a production gateway retries with backoff rather than failing the batch. Set `ENDPOINT_ID` to the numeric ID of your Spot endpoint, and remember each request consumes real GPU time once replicas are up.
 
-## Module 3 Reveal: Zero Cost at Sleep, Massive Scale at Work
-duration: 10 min
-id: autoscaling-reveal
+**The payoff: $0 asleep, massive scale at work.** Watch the Vertex AI dashboard as the simulator runs: the autoscaler detects the surge and provisions Spot **L4** nodes within minutes; the cluster scales to hundreds of active GPU nodes; then, after a cooldown (default ~15 minutes idle), Vertex AI deprovisions every Spot node back to **0 running replicas**.
 
-Watch the Vertex AI Dashboard closely as you execute the load simulator:
-1. **The Scale Up:** As concurrent requests spike, the autoscale manager detects the queue queueing latency. Within minutes, it begins dynamically allocating excess **Spot NVIDIA L4 GPU** instances in the project's subnets.
-2. **Dynamic Scale:** The cluster scales up to **hundreds of active GPU nodes**, processing the backtesting dataset at unprecedented throughput speeds.
-3. **The Scale-to-Zero:** Once the simulator stops sending requests, the endpoint experiences a brief cooldown window (default: 15 minutes of idle state). Finding no active requests, Vertex AI **deprovisions every single Spot node**, scaling back down to exactly **0 running replicas**.
+The financial impact, comparing two configurations of a 10-machine fleet:
 
-### The FinOps Financial Summary
+- **Scenario A — standard on-demand, continuous run:** 8x L4 at $8.15/hr → $5,868/machine/month → **$58,680/month** for 10 machines.
+- **Scenario B — Spot + scale-to-zero, 4 active hours/day:** Spot at $2.44/hr (≈70% off) × 4 hrs × 30 days = $292.80/machine/month → **$2,928/month** for 10 machines.
 
-Let's look at the financial impact of this architecture:
+**Direct monthly savings: $55,752 (94.9%).** That headline combines **two independent levers** — be clear which applies to your workload:
 
-- **Scenario A (Standard On-Demand, Continuous Run):**
-  - Compute Spec: 8x L4 standard GPU instances.
-  - Price: $8.15 / hour per machine.
-  - Total Monthly Cost: 24 hrs * 30 days * $8.15 = **$5,868** per machine.
-  - 10 machines continuous run = **$58,680 / month**.
-- **Scenario B (Spot VMs + Scale-to-Zero, 4 hours active daily):**
-  - Spot Price: $2.44 / hour (70% Spot VM discount).
-  - Scale-to-Zero: Active only 4 hours a day during research spikes.
-  - Daily cost per machine: 4 hours * $2.44 = $9.76.
-  - Monthly cost per machine: $9.76 * 30 days = **$292.80**.
-  - 10 machines active run = **$2,928 / month**.
+- **Spot pricing** (~70% off) is the per-hour discount; it applies whenever you run.
+- **Scale-to-zero** (here, 4 active hours vs 24) is the utilization lever; it only helps if usage is genuinely bursty.
 
-### Direct Monthly Savings: $55,752 (94.9% Cost Reduction!)
-
-By implementing this architecture, your firm gets the **raw horsepower** of massive GPU clusters on demand, while only paying for active processing time at rock-bottom Spot rates. Your idling cost is exactly **$0.00**.
+A 24/7 inference service gets the Spot discount but not the scale-to-zero savings. (This is also why the figure here is larger than the single-machine estimate in the module intro — different scenario, both levers stacked.) Either way, your idling cost is exactly **$0.00**.
 
 ---
 
@@ -648,17 +592,15 @@ By implementing this architecture, your firm gets the **raw horsepower** of mass
 duration: 10 min
 id: production-next-steps
 
-Congratulations! You have completed the **QuantScale: Building High-Throughput, Scale-to-Zero LLM Pipelines for Quant Research** workshop. 
+Congratulations — you've completed **QuantScale**. You built:
 
-You have successfully constructed:
-1. A highly parallel, asynchronous Python pipeline utilizing **Gemini 3.5 Flash** and the **Flex consumption header** to cut input/output API costs by 50% and bypass pay-as-you-go rate limits.
-2. A dedicated, weight-locked **Vertex AI Prediction Endpoint** running **Llama 3 70B** to guarantee perfectly reproducible and audit-safe backtesting results over multi-year research windows.
-3. An aggressive **Scale-to-Zero Spot GPU** cluster autoscaling policy targeting cost-optimized NVIDIA L4 capacity to reduce monthly compute spend by up to 95%.
+1. A concurrent, asynchronous Python pipeline using **Gemini 3.5 Flash** on the **Flex service tier** (`service_tier: "flex"`) to cut input/output costs ~50% on latency-tolerant work, with retry-with-backoff for best-effort capacity.
+2. A dedicated, weight-locked **Vertex AI Prediction Endpoint** running **Llama 3 70B**, pinned for reproducible, audit-friendly backtesting over multi-year windows.
+3. A **Spot + scale-to-zero** autoscaling policy on cost-efficient NVIDIA L4 capacity that drops idle cost to $0.00 and can burst to thousands of nodes.
 
-### Production Checklist
+**Production checklist:**
 
-To roll this architecture out to your production environments, consider the following best practices:
-
-- [ ] **Dynamic Workload Scheduling (DWS):** For extremely large batches (greater than 10,000 documents), leverage DWS to pre-reserve Spot GPU pools in advance, guaranteeing capacity availability before the job starts.
-- [ ] **Multi-Zone Resiliency:** Deploy your prediction endpoint across multiple zones (e.g., `us-central1-a`, `us-central1-b`, `us-central1-c`) to ensure that if a preemption occurs in one zone, requests are instantly routed to active Spot resources in another.
-- [ ] **Vertex AI Tensorboard Integration:** Wire your backtesting pipeline to Vertex AI Tensorboard to monitor token distribution, input/output cost telemetry, and model performance metrics in real time.
+- [ ] **Dynamic Workload Scheduling (DWS):** for very large batches (>10,000 documents), pre-reserve Spot GPU pools so capacity is guaranteed before the job starts.
+- [ ] **Multi-zone resiliency:** deploy across zones (e.g., `us-central1-a/b/c`) so a preemption in one zone reroutes to active Spot capacity in another.
+- [ ] **Observability:** wire the pipeline to Vertex AI monitoring / Tensorboard to track token distribution, cost telemetry, and latency in real time.
+- [ ] **Right-size the levers:** apply Spot pricing everywhere it's safe, but only claim scale-to-zero savings on genuinely bursty workloads.

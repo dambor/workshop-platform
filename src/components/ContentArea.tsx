@@ -250,7 +250,10 @@ export const ContentArea: React.FC<ContentAreaProps> = ({ step }) => {
   const scrollRef = React.useRef<HTMLDivElement>(null);
   React.useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = 0;
-  }, [step.id]);
+  }, [step?.id]);
+
+  // Defensive guard: never crash if an out-of-range/undefined step is passed in.
+  if (!step) return null;
 
   return (
     <div className="flex-1 h-screen overflow-hidden flex flex-col bg-surface relative">
