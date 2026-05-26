@@ -112,15 +112,6 @@ const LandingPage: React.FC = () => {
                         </span>
                     </button>
                     <div className="flex items-center gap-2">
-                        <a
-                            href="https://design.google/library/gemini-ai-visual-design"
-                            target="_blank"
-                            rel="noreferrer"
-                            className="hidden sm:inline-flex items-center gap-1.5 text-xs font-medium text-fg-muted hover:text-fg transition-colors px-3 py-2 rounded-full hover:bg-surface-1"
-                        >
-                            Design system
-                            <ArrowUpRight className="w-3.5 h-3.5" />
-                        </a>
                         <ThemeToggle />
                     </div>
                 </div>
