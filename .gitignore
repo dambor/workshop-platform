@@ -12,6 +12,11 @@ dist
 dist-ssr
 *.local
 
+# Local env files (keep secrets like VITE_GEMINI_API_KEY out of git)
+.env
+.env.*
+!.env.example
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
