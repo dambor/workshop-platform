@@ -2,7 +2,6 @@
 title: "Building a Financial Advisor: A Multi-Agent Investment Research Assistant with the Agent Development Kit"
 description: Recreate the open-source financial-advisor sample from Google ADK step by step. Build a coordinator agent on Gemini 2.5 Pro that orchestrates four specialized analysts — data, trading, execution, and risk — using the Agent Development Kit (ADK), the built-in Google Search tool, and shared session state.
 ---
-
 # Financial Advisor Overview
 
 Welcome to **Building a Financial Advisor with Google's ADK**. In this workshop you will reconstruct, from an empty folder, the official [`google/adk-samples` financial-advisor](https://github.com/google/adk-samples/tree/main/python/agents/financial-advisor) agent — a multi-agent system that walks a user through a structured investment-research workflow.
@@ -25,7 +24,7 @@ flowchart TD
 
 The solid arrows are **delegation** (the coordinator calling a sub-agent as a tool). The dotted arrows are **state**: each analyst writes its result to a named session key (`output_key`), and the next analyst reads it back. This is the pattern that lets four independent agents collaborate on one coherent answer.
 
-### The four-stage advisory workflow
+**The four-stage advisory workflow**
 
 | Stage | Sub-agent | Job | Reads | Writes (`output_key`) |
 |-------|-----------|-----|-------|------------------------|
@@ -34,7 +33,7 @@ The solid arrows are **delegation** (the coordinator calling a sub-agent as a to
 | 3 | `execution_analyst` | Turn a chosen strategy into an execution plan | stage 2 output + preferences | `execution_plan_output` |
 | 4 | `risk_analyst` | Evaluate the overall risk of the full plan | stages 1–3 outputs | `final_risk_assessment_output` |
 
-### Core objectives
+**Core objectives**
 
 By the end of this workshop, you will have mastered:
 
@@ -43,7 +42,7 @@ By the end of this workshop, you will have mastered:
 3. **Grounding with the built-in `google_search` tool** — giving the `data_analyst` real, recent market information instead of relying on the model's training data.
 4. **Passing state between agents with `output_key`** — the mechanism that chains one agent's output into the next agent's input.
 
-### Target audience
+**Target audience**
 
 - **Developers and AI engineers** who want a concrete, runnable introduction to multi-agent orchestration with ADK.
 - **Data and platform teams** evaluating Gemini 2.5 Pro and Vertex AI for structured, tool-using agent workflows.
@@ -56,25 +55,25 @@ By the end of this workshop, you will have mastered:
 # Setup
 
 ## Project, APIs, and Authentication
-duration: 15 min
+duration: 25 min
 id: setup-env
 
 The financial-advisor sample runs on **Gemini 2.5 Pro through Vertex AI**, so you need a billing-enabled Google Cloud project and credentials on your machine.
 
-### 1. Select a project and open Cloud Shell
+**1. Select a project and open Cloud Shell**
 
 Open the [Google Cloud Console](https://console.cloud.google.com/) and select (or create) a billing-enabled project. For this workshop we will assume the project ID is `financial-advisor-lab`.
 
 Click **Activate Cloud Shell** in the top-right toolbar. Cloud Shell is a free, pre-authenticated Linux terminal — the simplest place to run this workshop. (You can also work locally if you have the `gcloud` CLI and Python 3.10+ installed.)
 
-### 2. Set your project and enable Vertex AI
+**2. Set your project and enable Vertex AI**
 
 ```bash
 gcloud config set project financial-advisor-lab
 gcloud services enable aiplatform.googleapis.com
 ```
 
-### 3. Authenticate with Application Default Credentials
+**3. Authenticate with Application Default Credentials**
 
 ADK will call Vertex AI using your local credentials. Log in and set the quota project:
 
@@ -85,17 +84,11 @@ gcloud auth application-default set-quota-project financial-advisor-lab
 
 > TIP: New Google Cloud accounts get $300 in free credits. A full run of this workshop costs well under a dollar.
 
-Now move on to install the Agent Development Kit.
+Now install the Agent Development Kit.
 
----
+**Install the ADK.** The **Agent Development Kit (ADK)** is Google's open-source framework for building and running agents. The `google-adk` package ships both the agent classes you will import and the `adk` command-line tool you will use to run everything.
 
-## Install the ADK
-duration: 10 min
-id: setup-adk
-
-The **Agent Development Kit (ADK)** is Google's open-source framework for building and running agents. The `google-adk` package ships both the agent classes you will import and the `adk` command-line tool you will use to run everything.
-
-### 1. Create and activate a virtual environment
+**1. Create and activate a virtual environment**
 
 Python 3.10–3.12 is required. Create an isolated environment:
 
@@ -107,7 +100,7 @@ pip install --upgrade pip
 
 > WARNING: The activate script lives in `.venv/bin/activate` (Linux/macOS) or `.venv\Scripts\activate` (Windows). A common mistake is `source .venv/activate`, which does not exist.
 
-### 2. Install the ADK
+**2. Install the ADK**
 
 ```bash
 pip install google-adk
@@ -128,7 +121,7 @@ You should see a version number printed. You are ready to build the agent.
 # Module 1: The Financial Coordinator
 
 ## Why a Coordinator, Not One Big Prompt
-duration: 10 min
+duration: 30 min
 id: coordinator-concept
 
 You *could* try to do everything — research, strategy, execution, risk — in a single prompt with a single model. In practice that breaks down:
@@ -137,7 +130,7 @@ You *could* try to do everything — research, strategy, execution, risk — in 
 - **No clean handoffs.** A monolithic prompt has no structured way to say "the market research is done, now use *exactly that* to build strategies."
 - **Hard to evolve.** Improving the risk logic means editing one giant prompt and risking regressions everywhere else.
 
-### The orchestrator pattern
+**The orchestrator pattern**
 
 ADK's answer is an **orchestrator** (also called a coordinator): a root `LlmAgent` whose job is *delegation*, not domain work. Each specialized task becomes its own agent with its own focused prompt. The coordinator decides which sub-agent to call, when, and with what inputs.
 
@@ -165,17 +158,11 @@ sequenceDiagram
     C-->>U: Summary + "What's your risk attitude?"
 ```
 
-In the hands-on lab you'll scaffold the project and write the coordinator. Its sub-agents will be empty stubs for now — we fill them in over the following modules.
+Now let's scaffold the project and write the coordinator. Its sub-agents will be empty stubs for now — we fill them in over the following modules.
 
----
+**Hands-on: scaffold the project and write the coordinator.** ADK discovers agents by **package structure**. When you run `adk run financial_advisor`, the tool imports the `financial_advisor` package and looks for a variable named `root_agent`. We'll build that structure now.
 
-## Hands-on: Scaffold the Project and Write the Coordinator
-duration: 20 min
-id: coordinator-hands-on
-
-ADK discovers agents by **package structure**. When you run `adk run financial_advisor`, the tool imports the `financial_advisor` package and looks for a variable named `root_agent`. We'll build that structure now.
-
-### Step 1: Create the package layout
+**Step 1: Create the package layout**
 
 In Cloud Shell (with your virtualenv active), create the directories and empty files:
 
@@ -213,7 +200,7 @@ financial_advisor/
     └── risk_analyst/      (same three files)
 ```
 
-### Step 2: Configure Vertex AI for the package
+**Step 2: Configure Vertex AI for the package**
 
 ADK automatically loads a `.env` file from the agent package. Create `financial_advisor/.env`:
 
@@ -227,7 +214,7 @@ EOF
 
 > TIP: Prefer the simpler Google AI Studio path instead of Vertex AI? Get a key from [aistudio.google.com](https://aistudio.google.com/apikey) and put `GOOGLE_GENAI_USE_VERTEXAI=FALSE` and `GOOGLE_API_KEY=your-key` in the `.env` file instead. The agent code is identical either way.
 
-### Step 3: Write the coordinator's prompt
+**Step 3: Write the coordinator's prompt**
 
 The coordinator's prompt is the *script* for the whole conversation: introduce itself, show the disclaimer, then walk through the four stages, calling the right sub-agent at each one. Put this in `financial_advisor/prompt.py`:
 
@@ -285,7 +272,7 @@ Output each subagent's extended result by visualizing it as markdown.
 """
 ```
 
-### Step 4: Write the coordinator agent
+**Step 4: Write the coordinator agent**
 
 Now `financial_advisor/agent.py`. This imports the four sub-agents (still empty — we'll fill them next), wraps each in an `AgentTool`, and exposes the coordinator as `root_agent`:
 
@@ -327,7 +314,7 @@ financial_coordinator = LlmAgent(
 root_agent = financial_coordinator
 ```
 
-### Step 5: Export the package
+**Step 5: Export the package**
 
 The top-level `financial_advisor/__init__.py` makes `agent.py` importable:
 
@@ -343,7 +330,7 @@ The project won't run yet — the four `data_analyst_agent`, `trading_analyst_ag
 # Module 2: The Data Analyst (Market Research)
 
 ## Grounding an Agent with Google Search
-duration: 10 min
+duration: 30 min
 id: data-analyst-concept
 
 The first stage of advice is *research*. The `data_analyst` agent answers one question: **what is actually happening with this ticker right now?**
@@ -367,13 +354,9 @@ The prompt does the heavy lifting. It instructs the agent to:
 
 Crucially, the agent must base its report **only** on what it found, never on assumptions. That discipline is what makes the downstream strategy and risk stages trustworthy.
 
----
+**Hands-on: build the data_analyst sub-agent.**
 
-## Hands-on: Build the data_analyst Sub-Agent
-duration: 20 min
-id: data-analyst-hands-on
-
-### Step 1: Write the data_analyst prompt
+**Step 1: Write the data_analyst prompt**
 
 Put this in `financial_advisor/sub_agents/data_analyst/prompt.py`. It's long because the report structure is the whole point — a vague prompt yields a vague report:
 
@@ -430,7 +413,7 @@ Expected Final Output (single structured report):
 """
 ```
 
-### Step 2: Write the data_analyst agent
+**Step 2: Write the data_analyst agent**
 
 In `financial_advisor/sub_agents/data_analyst/agent.py`, attach the `google_search` tool and set the `output_key` so the report lands in shared state:
 
@@ -456,7 +439,7 @@ data_analyst_agent = Agent(
 
 > NOTE: `Agent` is ADK's alias for `LlmAgent` — the sub-agents import the short name, the coordinator imports `LlmAgent`. They are the same class.
 
-### Step 3: Export the sub-agent
+**Step 3: Export the sub-agent**
 
 The coordinator does `from .sub_agents.data_analyst import data_analyst_agent`, so the sub-package must re-export it. Put this in `financial_advisor/sub_agents/data_analyst/__init__.py`:
 
@@ -472,7 +455,7 @@ That's the complete pattern for every sub-agent: **prompt.py** (instructions), *
 # Module 3: The Trading Analyst (Strategy Development)
 
 ## Passing State Between Agents with output_key
-duration: 10 min
+duration: 30 min
 id: trading-analyst-concept
 
 The `data_analyst` wrote its report to `market_data_analysis_output`. The `trading_analyst`'s job is to read that report and propose **at least five** concrete trading strategies tailored to the user's risk attitude and investment horizon.
@@ -494,13 +477,9 @@ Notice the `trading_analyst` itself has **no tools** — it doesn't search the w
 
 The prompt also encodes a **prerequisite check**: if `market_data_analysis_output` is missing, the agent must stop and tell the user to run the analysis step first. This prevents the model from hallucinating strategies on top of no data.
 
----
+**Hands-on: build the trading_analyst sub-agent.**
 
-## Hands-on: Build the trading_analyst Sub-Agent
-duration: 20 min
-id: trading-analyst-hands-on
-
-### Step 1: Write the trading_analyst prompt
+**Step 1: Write the trading_analyst prompt**
 
 In `financial_advisor/sub_agents/trading_analyst/prompt.py`:
 
@@ -543,7 +522,7 @@ before making any investment decision."
 """
 ```
 
-### Step 2: Write the agent and export it
+**Step 2: Write the agent and export it**
 
 `financial_advisor/sub_agents/trading_analyst/agent.py` — same shape as the data_analyst, but **no tools** and a different `output_key`:
 
@@ -577,7 +556,7 @@ Two stages down, two to go. The execution and risk analysts follow the identical
 # Module 4: Execution & Risk Analysts
 
 ## Completing the Advisory Pipeline
-duration: 10 min
+duration: 35 min
 id: exec-risk-concept
 
 The last two analysts turn a *strategy* into an actionable, risk-checked *plan*.
@@ -598,15 +577,9 @@ flowchart TD
 
 Notice how `risk_analyst` consumes the outputs of every earlier stage. This is the multi-agent payoff: each agent did one focused job, and their named outputs compose into a complete, coherent advisory package — something a single prompt would struggle to produce reliably.
 
----
+**Hands-on: build the execution_analyst and risk_analyst.** By now the pattern is muscle memory: **prompt.py → agent.py → \_\_init\_\_.py**. We'll do both remaining agents in one pass.
 
-## Hands-on: Build the execution_analyst and risk_analyst
-duration: 25 min
-id: exec-risk-hands-on
-
-By now the pattern is muscle memory: **prompt.py → agent.py → \_\_init\_\_.py**. We'll do both remaining agents in one pass.
-
-### Step 1: The execution_analyst
+**Step 1: The execution_analyst**
 
 `financial_advisor/sub_agents/execution_analyst/prompt.py`:
 
@@ -667,7 +640,7 @@ execution_analyst_agent = Agent(
 from .agent import execution_analyst_agent
 ```
 
-### Step 2: The risk_analyst
+**Step 2: The risk_analyst**
 
 `financial_advisor/sub_agents/risk_analyst/prompt.py`:
 
@@ -741,7 +714,7 @@ ADK gives you two ways to run the agent. Both look for the `root_agent` you expo
 
 > WARNING: Run these commands from the directory that **contains** the `financial_advisor/` folder, not from inside it. ADK imports `financial_advisor` as a package.
 
-### Option A: The web UI (recommended)
+**Option A: The web UI (recommended)**
 
 ```bash
 adk web
@@ -749,7 +722,7 @@ adk web
 
 This starts a local server and prints a URL (typically `http://localhost:8000`). Open it, pick **financial_advisor** from the agent dropdown, and chat. The web UI also shows a trace of every tool call — you'll literally watch the coordinator invoke `data_analyst`, then `trading_analyst`, and so on.
 
-### Option B: The terminal
+**Option B: The terminal**
 
 ```bash
 adk run financial_advisor
@@ -757,7 +730,7 @@ adk run financial_advisor
 
 This drops you into an interactive REPL in the terminal. Type `exit` to quit.
 
-### Walk through the four stages
+**Walk through the four stages**
 
 Drive the conversation the same way the upstream sample does. Try this sequence:
 
@@ -789,7 +762,7 @@ At any step you can say **"show me the detailed result as markdown"** to get the
 
 > TIP: The very first response can take a while — `data_analyst` runs *multiple* Google searches before synthesizing. Subsequent stages are faster because they reason over state instead of searching.
 
-### Troubleshooting
+**Troubleshooting**
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -812,7 +785,7 @@ Congratulations — you've rebuilt Google's financial-advisor multi-agent system
 2. A **`data_analyst`** grounded in live market data via the built-in `google_search` tool.
 3. Three reasoning sub-agents — **`trading_analyst`**, **`execution_analyst`**, **`risk_analyst`** — chained together through `output_key` session state.
 
-### Take it to production
+**Take it to production**
 
 The upstream sample includes a deployment script that publishes the agent to **Vertex AI Agent Engine**, a managed runtime for ADK agents. The essence:
 
@@ -840,7 +813,7 @@ print(f"Created remote agent: {remote_agent.resource_name}")
 
 You'd run it with `python deployment/deploy.py --create` (after setting `GOOGLE_CLOUD_STORAGE_BUCKET`), then `--list` to find the resource ID and `--delete` to tear it down.
 
-### Where to go from here
+**Where to go from here**
 
 - [ ] **Add real data tools.** Replace pure Google Search with connectors to market-data APIs, SEC EDGAR, or a BigQuery table of fundamentals so the `data_analyst` works from structured, authoritative data.
 - [ ] **Add evaluation.** ADK's `[eval]` extra lets you score the agent against a `.test.json` of expected behaviors so prompt changes don't cause regressions.
