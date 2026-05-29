@@ -4,6 +4,7 @@ import { Sidebar } from './Sidebar';
 import { ContentArea } from './ContentArea';
 import { ChatWidget } from './ChatWidget';
 import { parseWorkshopMarkdown } from '../utils/markdownParser';
+import { getGeneratedWorkshop } from '../services/generatedWorkshops';
 import { WorkshopStep } from '../types';
 
 const WorkshopView: React.FC = () => {
@@ -22,6 +23,16 @@ const WorkshopView: React.FC = () => {
     const loadWorkshop = async () => {
       try {
         setLoading(true);
+
+        // Generated workshops live in localStorage (created via /create), not as files.
+        const generated = workshopId ? getGeneratedWorkshop(workshopId) : null;
+        if (generated) {
+          const parsedSteps = parseWorkshopMarkdown(generated.content);
+          setSteps(parsedSteps);
+          setCurrentStepIndex(prev => Math.min(Math.max(prev, 0), Math.max(0, parsedSteps.length - 1)));
+          setLoading(false);
+          return;
+        }
 
         // Try local path first (works in dev and when served locally)
         const basePath = import.meta.env.BASE_URL || '/';

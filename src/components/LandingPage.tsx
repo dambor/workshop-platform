@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowUpRight, Clock, GraduationCap, Search, Sparkles } from 'lucide-react';
+import { ArrowUpRight, Clock, GraduationCap, Search, Sparkles, Plus } from 'lucide-react';
 import { GeminiLogo } from './GeminiLogo';
 import { ThemeToggle } from './ThemeToggle';
+import { listGeneratedWorkshops } from '../services/generatedWorkshops';
 
 interface WorkshopCard {
     id: string;
     title: string;
     description: string;
     content: string;
+    generated?: boolean;
 }
 
 const LandingPage: React.FC = () => {
@@ -84,9 +86,17 @@ const LandingPage: React.FC = () => {
                 });
 
                 const results = await Promise.all(workshopPromises);
-                setWorkshops(results.filter((w): w is WorkshopCard => w !== null));
+                const fileWorkshops = results.filter((w): w is WorkshopCard => w !== null);
+                const generated: WorkshopCard[] = listGeneratedWorkshops().map(g => ({
+                    id: g.id, title: g.title, description: g.description, content: g.content, generated: true,
+                }));
+                setWorkshops([...generated, ...fileWorkshops]);
             } catch (error) {
                 console.error('Error discovering workshops:', error);
+                // Still show any locally generated workshops if remote discovery fails.
+                setWorkshops(listGeneratedWorkshops().map(g => ({
+                    id: g.id, title: g.title, description: g.description, content: g.content, generated: true,
+                })));
             }
         };
 
@@ -112,6 +122,12 @@ const LandingPage: React.FC = () => {
                         </span>
                     </button>
                     <div className="flex items-center gap-2">
+                        <button
+                            onClick={() => navigate('/create')}
+                            className="inline-flex items-center gap-1.5 px-4 py-2 gemini-gradient text-white rounded-full text-sm font-medium hover:scale-[1.03] active:scale-95 transition-transform shadow-lg shadow-[var(--color-gemini-purple)]/20"
+                        >
+                            <Plus className="w-4 h-4" /> Create workshop
+                        </button>
                         <ThemeToggle />
                     </div>
                 </div>
@@ -181,6 +197,12 @@ const LandingPage: React.FC = () => {
                                 <div className="w-12 h-12 rounded-2xl gemini-gradient flex items-center justify-center mb-6 shadow-lg shadow-[var(--color-gemini-purple)]/20 group-hover:scale-110 transition-transform">
                                     <Sparkles className="w-5 h-5 text-white" />
                                 </div>
+
+                                {workshop.generated && (
+                                    <span className="inline-flex items-center gap-1 self-start mb-3 px-2.5 py-1 rounded-full text-[11px] font-medium bg-[var(--color-gemini-purple)]/15 text-[var(--color-gemini-purple)] border border-[var(--color-gemini-purple)]/30">
+                                        <Sparkles className="w-3 h-3" /> Generated · saved in this browser
+                                    </span>
+                                )}
 
                                 <h3 className="font-display text-xl font-semibold text-fg mb-3 tracking-tight">
                                     {workshop.title}

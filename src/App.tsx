@@ -2,6 +2,7 @@ import React from 'react';
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import LandingPage from './components/LandingPage';
 import WorkshopView from './components/WorkshopView';
+import CreateWorkshop from './components/CreateWorkshop';
 import { ThemeProvider } from './theme/ThemeContext';
 
 const App: React.FC = () => {
@@ -11,6 +12,7 @@ const App: React.FC = () => {
         <div className="min-h-screen bg-surface text-fg transition-colors duration-300">
           <Routes>
             <Route path="/" element={<LandingPage />} />
+            <Route path="/create" element={<CreateWorkshop />} />
             <Route path="/:workshopId" element={<WorkshopView />} />
           </Routes>
         </div>
